@@ -87,24 +87,13 @@ document.addEventListener('DOMContentLoaded', () => {
 
   sections.forEach(s => secObserver.observe(s));
 
-  /* ── Contact form ───────────────────────────── */
+  /* ── Contact form (envío real vía FormSubmit.co) ── */
   const form = document.getElementById('contactForm');
   if (form) {
-    form.addEventListener('submit', e => {
-      e.preventDefault();
+    form.addEventListener('submit', () => {
       const btn = form.querySelector('button[type="submit"]');
-      const original = btn.innerHTML;
-
-      btn.innerHTML  = '<i class="fas fa-check"></i>&nbsp; ¡Reserva Enviada!';
-      btn.style.background = '#314B36';
-      btn.disabled = true;
-
-      setTimeout(() => {
-        btn.innerHTML  = original;
-        btn.style.background = '';
-        btn.disabled = false;
-        form.reset();
-      }, 3500);
+      btn.innerHTML = '<i class="fas fa-circle-notch fa-spin"></i>&nbsp; Enviando…';
+      btn.disabled  = true;
     });
   }
 
