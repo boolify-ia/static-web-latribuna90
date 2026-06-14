@@ -1369,3 +1369,55 @@ button { font-family: var(--ff-body); }
   .cafe-brand { font-size: 1.7rem; }
   .gaming-scoreboard { flex-direction: column; gap: .5rem; }
 }
+
+/* ================================================
+   PLATO ESTRELLA - Banner Mini Hamburguesas
+   ================================================ */
+.star-dish-banner {
+  grid-column: 1 / -1;
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  background: linear-gradient(135deg, rgba(212,175,55,.14), rgba(212,175,55,.03));
+  border: 2px solid var(--gold);
+  border-radius: .75rem;
+  padding: 1.75rem 2rem;
+  margin-bottom: .25rem;
+  box-shadow: 0 0 40px rgba(212,175,55,.12);
+}
+.star-dish-icon {
+  font-size: 2.6rem;
+  flex-shrink: 0;
+  line-height: 1;
+}
+.star-dish-text .star-dish-tag {
+  display: inline-block;
+  font-family: var(--ff-sub);
+  font-size: .68rem;
+  font-weight: 600;
+  letter-spacing: .15em;
+  text-transform: uppercase;
+  color: var(--brown-dark);
+  background: var(--gold);
+  padding: .3rem .85rem;
+  border-radius: 2rem;
+  margin-bottom: .65rem;
+}
+.star-dish-text h3 {
+  font-family: var(--ff-title);
+  font-size: 1.6rem;
+  letter-spacing: .04em;
+  color: var(--gold);
+  margin-bottom: .4rem;
+}
+.star-dish-text p {
+  color: var(--text-muted);
+  font-size: .9rem;
+  line-height: 1.7;
+  max-width: 720px;
+}
+
+@media (max-width: 700px) {
+  .star-dish-banner { flex-direction: column; text-align: center; }
+  .star-dish-text p { max-width: 100%; }
+}
