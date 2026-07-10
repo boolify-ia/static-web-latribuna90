@@ -4,664 +4,497 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Trivia Fútbol — La Tribuna 90</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Oswald:wght@400;600;700&family=Lato:wght@400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <style>
     :root {
-      --brown: #36130E; --brown-dark: #1a0a08; --green: #314B36;
-      --green-light: #3d5e43; --gold: #D4AF37; --red: #C5452E;
-      --cream: #F5F0E8; --text-muted: rgba(245,240,232,0.6);
-      --ff-title: 'Bebas Neue', sans-serif;
-      --ff-sub: 'Oswald', sans-serif;
-      --ff-body: 'Lato', sans-serif;
+      --brown:#36130E; --brown-dark:#1a0a08; --green:#314B36;
+      --green-light:#3d5e43; --gold:#D4AF37; --red:#C5452E;
+      --cream:#F5F0E8; --muted:rgba(245,240,232,0.6);
+      --ff-t:'Bebas Neue',sans-serif; --ff-s:'Oswald',sans-serif; --ff-b:'Lato',sans-serif;
     }
-    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-    html { scroll-behavior: smooth; }
-    body {
-      font-family: var(--ff-body);
-      background: var(--brown-dark);
-      color: var(--cream);
-      min-height: 100vh;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      padding: 2rem 1rem 4rem;
-    }
-
-    /* HEADER */
-    .logo-wrap { text-align: center; margin-bottom: 1.5rem; }
-    .logo-wrap img { height: 70px; }
-    .logo-wrap h1 {
-      font-family: var(--ff-title);
-      font-size: 2.8rem;
-      letter-spacing: .06em;
-      color: var(--gold);
-      line-height: 1;
-      margin-top: .4rem;
-    }
-    .logo-wrap p { color: var(--text-muted); font-size: .9rem; margin-top: .3rem; }
-
-    /* CARD */
-    .card {
-      background: rgba(54,19,14,0.6);
-      border: 1px solid rgba(212,175,55,.25);
-      border-radius: 1.2rem;
-      padding: 2rem;
-      width: 100%;
-      max-width: 520px;
-      box-shadow: 0 8px 40px rgba(0,0,0,.4);
-    }
-
-    /* TOKEN SCREEN */
-    #screen-token { display: flex; flex-direction: column; gap: 1.2rem; }
-    .screen-title {
-      font-family: var(--ff-sub);
-      font-size: 1.3rem;
-      font-weight: 700;
-      text-transform: uppercase;
-      letter-spacing: .08em;
-      color: var(--gold);
-      text-align: center;
-    }
-    .screen-desc { color: var(--text-muted); text-align: center; font-size: .9rem; line-height: 1.6; }
-    .input-wrap { display: flex; flex-direction: column; gap: .5rem; }
-    .input-wrap label { font-family: var(--ff-sub); font-size: .8rem; letter-spacing: .1em; text-transform: uppercase; color: var(--text-muted); }
-    .input-wrap input {
-      background: rgba(255,255,255,.06);
-      border: 1px solid rgba(212,175,55,.3);
-      border-radius: .6rem;
-      padding: .85rem 1rem;
-      color: var(--cream);
-      font-family: var(--ff-sub);
-      font-size: 1.1rem;
-      letter-spacing: .15em;
-      text-transform: uppercase;
-      outline: none;
-      transition: border-color .2s;
-    }
-    .input-wrap input:focus { border-color: var(--gold); }
-    .input-wrap input.error { border-color: var(--red); }
-    .input-wrap input::placeholder { color: rgba(245,240,232,.3); letter-spacing: .05em; text-transform: none; }
-    .name-wrap { display: flex; flex-direction: column; gap: .5rem; }
-    .name-wrap label { font-family: var(--ff-sub); font-size: .8rem; letter-spacing: .1em; text-transform: uppercase; color: var(--text-muted); }
-    .name-wrap input {
-      background: rgba(255,255,255,.06);
-      border: 1px solid rgba(212,175,55,.3);
-      border-radius: .6rem;
-      padding: .85rem 1rem;
-      color: var(--cream);
-      font-family: var(--ff-body);
-      font-size: 1rem;
-      outline: none;
-      transition: border-color .2s;
-    }
-    .name-wrap input:focus { border-color: var(--gold); }
-    .err-msg { color: var(--red); font-size: .82rem; text-align: center; min-height: 1rem; }
-
+    *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+    html{scroll-behavior:smooth;}
+    body{font-family:var(--ff-b);background:var(--brown-dark);color:var(--cream);min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:2rem 1rem 4rem;}
+    .logo-wrap{text-align:center;margin-bottom:1.5rem;}
+    .logo-wrap img{height:64px;}
+    .logo-wrap h1{font-family:var(--ff-t);font-size:2.6rem;letter-spacing:.06em;color:var(--gold);line-height:1;margin-top:.4rem;}
+    .logo-wrap p{color:var(--muted);font-size:.88rem;margin-top:.25rem;}
+    .card{background:rgba(54,19,14,.65);border:1px solid rgba(212,175,55,.25);border-radius:1.2rem;padding:2rem;width:100%;max-width:520px;box-shadow:0 8px 40px rgba(0,0,0,.4);}
+    .nav-tabs{display:flex;gap:.5rem;justify-content:center;margin-bottom:1.5rem;}
+    .nav-tab{padding:.4rem 1.1rem;border-radius:2rem;border:1px solid rgba(212,175,55,.25);background:transparent;color:var(--muted);font-family:var(--ff-s);font-size:.8rem;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;transition:all .2s;}
+    .nav-tab.active,.nav-tab:hover{background:rgba(212,175,55,.12);border-color:var(--gold);color:var(--gold);}
+    /* SCREENS */
+    .screen{display:none;flex-direction:column;gap:1.25rem;}
+    .screen.active{display:flex;}
+    .screen-title{font-family:var(--ff-s);font-size:1.25rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--gold);text-align:center;}
+    .screen-desc{color:var(--muted);text-align:center;font-size:.88rem;line-height:1.6;}
+    /* INPUTS */
+    .field{display:flex;flex-direction:column;gap:.4rem;}
+    .field label{font-family:var(--ff-s);font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);}
+    .field input{background:rgba(255,255,255,.06);border:1px solid rgba(212,175,55,.3);border-radius:.6rem;padding:.85rem 1rem;color:var(--cream);font-family:var(--ff-s);font-size:1rem;outline:none;transition:border-color .2s;width:100%;}
+    .field input:focus{border-color:var(--gold);}
+    .field input.error{border-color:var(--red);}
+    .field input::placeholder{color:rgba(245,240,232,.3);}
+    .err-msg{color:var(--red);font-size:.82rem;text-align:center;min-height:1rem;}
     /* BUTTONS */
-    .btn {
-      display: inline-flex; align-items: center; justify-content: center; gap: .5rem;
-      font-family: var(--ff-sub); font-weight: 600; font-size: 1rem;
-      letter-spacing: .08em; text-transform: uppercase;
-      padding: .85rem 1.5rem; border-radius: .6rem;
-      border: none; cursor: pointer; transition: all .2s;
-    }
-    .btn-gold { background: linear-gradient(135deg, var(--gold), #b8960c); color: var(--brown-dark); }
-    .btn-gold:hover { filter: brightness(1.1); transform: translateY(-2px); }
-    .btn-green { background: var(--green); color: var(--cream); }
-    .btn-green:hover { background: var(--green-light); transform: translateY(-2px); }
-    .btn-outline { background: transparent; border: 1px solid var(--gold); color: var(--gold); }
-    .btn-outline:hover { background: rgba(212,175,55,.1); }
-    .btn:disabled { opacity: .5; cursor: not-allowed; transform: none; }
-
-    /* QUIZ SCREEN */
-    #screen-quiz { display: none; flex-direction: column; gap: 1.5rem; }
-    .quiz-header { display: flex; justify-content: space-between; align-items: center; }
-    .quiz-score-wrap { text-align: right; }
-    .quiz-score-label { font-family: var(--ff-sub); font-size: .7rem; letter-spacing: .1em; text-transform: uppercase; color: var(--text-muted); }
-    .quiz-score-val { font-family: var(--ff-title); font-size: 2rem; color: var(--gold); line-height: 1; }
-    .quiz-progress { font-family: var(--ff-sub); font-size: .8rem; color: var(--text-muted); }
-    .progress-bar-wrap { background: rgba(255,255,255,.08); border-radius: 2rem; height: 6px; overflow: hidden; }
-    .progress-bar { height: 100%; background: linear-gradient(90deg, var(--gold), #b8960c); border-radius: 2rem; transition: width .4s ease; }
-    .question-num { font-family: var(--ff-sub); font-size: .75rem; letter-spacing: .12em; text-transform: uppercase; color: var(--gold); }
-    .question-text { font-family: var(--ff-sub); font-size: 1.25rem; font-weight: 600; line-height: 1.4; }
-    .options-grid { display: flex; flex-direction: column; gap: .75rem; }
-    .opt-btn {
-      width: 100%; text-align: left; padding: .9rem 1.1rem;
-      background: rgba(255,255,255,.05); border: 1px solid rgba(212,175,55,.2);
-      border-radius: .7rem; color: var(--cream);
-      font-family: var(--ff-body); font-size: .95rem;
-      cursor: pointer; transition: all .2s; display: flex; align-items: center; gap: .75rem;
-    }
-    .opt-btn:hover:not(:disabled) { border-color: var(--gold); background: rgba(212,175,55,.08); }
-    .opt-btn .opt-letter {
-      width: 28px; height: 28px; border-radius: 50%;
-      background: rgba(212,175,55,.15); border: 1px solid rgba(212,175,55,.3);
-      display: flex; align-items: center; justify-content: center;
-      font-family: var(--ff-sub); font-size: .8rem; font-weight: 700; color: var(--gold);
-      flex-shrink: 0;
-    }
-    .opt-btn.correct { background: rgba(49,75,54,.5); border-color: #4caf50; }
-    .opt-btn.correct .opt-letter { background: #4caf50; border-color: #4caf50; color: white; }
-    .opt-btn.wrong { background: rgba(197,69,46,.25); border-color: var(--red); }
-    .opt-btn.wrong .opt-letter { background: var(--red); border-color: var(--red); color: white; }
-    .opt-btn:disabled { cursor: default; }
-    .feedback-msg {
-      text-align: center; font-family: var(--ff-sub); font-size: 1rem;
-      font-weight: 600; letter-spacing: .05em; min-height: 1.5rem; padding: .5rem;
-      border-radius: .5rem;
-    }
-    .feedback-msg.correct { background: rgba(49,75,54,.4); color: #81c784; }
-    .feedback-msg.wrong { background: rgba(197,69,46,.2); color: #ef9a9a; }
-    .timer-wrap { display: flex; align-items: center; gap: .5rem; }
-    .timer-circle {
-      width: 42px; height: 42px; border-radius: 50%;
-      border: 3px solid var(--gold); display: flex; align-items: center; justify-content: center;
-      font-family: var(--ff-title); font-size: 1.1rem; color: var(--gold);
-      transition: border-color .3s, color .3s;
-    }
-    .timer-circle.urgent { border-color: var(--red); color: var(--red); animation: pulse-red .5s infinite; }
-    @keyframes pulse-red { 0%,100%{opacity:1} 50%{opacity:.5} }
-
-    /* RESULT SCREEN */
-    #screen-result { display: none; flex-direction: column; gap: 1.5rem; text-align: center; }
-    .result-trophy { font-size: 4rem; line-height: 1; }
-    .result-title { font-family: var(--ff-title); font-size: 2.5rem; letter-spacing: .05em; color: var(--gold); }
-    .result-score { font-family: var(--ff-title); font-size: 4rem; color: var(--cream); line-height: 1; }
-    .result-score span { font-size: 1.5rem; color: var(--text-muted); }
-    .result-msg { color: var(--text-muted); line-height: 1.6; font-size: .95rem; }
-    .result-breakdown { display: flex; justify-content: center; gap: 2rem; padding: 1rem 0; border-top: 1px solid rgba(212,175,55,.15); border-bottom: 1px solid rgba(212,175,55,.15); }
-    .result-stat { display: flex; flex-direction: column; align-items: center; gap: .25rem; }
-    .result-stat-val { font-family: var(--ff-title); font-size: 2rem; color: var(--gold); }
-    .result-stat-label { font-family: var(--ff-sub); font-size: .7rem; text-transform: uppercase; letter-spacing: .1em; color: var(--text-muted); }
-
+    .btn{display:inline-flex;align-items:center;justify-content:center;gap:.45rem;font-family:var(--ff-s);font-weight:600;font-size:.95rem;letter-spacing:.08em;text-transform:uppercase;padding:.82rem 1.5rem;border-radius:.6rem;border:none;cursor:pointer;transition:all .2s;width:100%;}
+    .btn-gold{background:linear-gradient(135deg,var(--gold),#b8960c);color:var(--brown-dark);}
+    .btn-gold:hover{filter:brightness(1.1);transform:translateY(-2px);}
+    .btn-outline{background:transparent;border:1px solid var(--gold);color:var(--gold);}
+    .btn-outline:hover{background:rgba(212,175,55,.1);}
+    .btn:disabled{opacity:.45;cursor:not-allowed;transform:none;}
+    /* QUIZ */
+    .quiz-header{display:flex;justify-content:space-between;align-items:flex-start;}
+    .q-progress{font-family:var(--ff-s);font-size:.78rem;color:var(--muted);}
+    .q-cat{font-family:var(--ff-s);font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);margin-top:.2rem;}
+    .score-wrap{text-align:right;}
+    .score-label{font-family:var(--ff-s);font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);}
+    .score-val{font-family:var(--ff-t);font-size:2rem;color:var(--gold);line-height:1;}
+    .prog-bar-bg{background:rgba(255,255,255,.08);border-radius:2rem;height:5px;overflow:hidden;}
+    .prog-bar{height:100%;background:linear-gradient(90deg,var(--gold),#b8960c);border-radius:2rem;transition:width .4s ease;}
+    .timer-row{display:flex;align-items:center;justify-content:center;gap:.6rem;}
+    .timer-circle{width:44px;height:44px;border-radius:50%;border:3px solid var(--gold);display:flex;align-items:center;justify-content:center;font-family:var(--ff-t);font-size:1.15rem;color:var(--gold);transition:border-color .3s,color .3s;}
+    .timer-circle.urgent{border-color:var(--red);color:var(--red);animation:blink .5s infinite;}
+    @keyframes blink{0%,100%{opacity:1}50%{opacity:.4}}
+    .q-text{font-family:var(--ff-s);font-size:1.2rem;font-weight:600;line-height:1.45;}
+    .opts{display:flex;flex-direction:column;gap:.7rem;}
+    .opt{width:100%;text-align:left;padding:.85rem 1rem;background:rgba(255,255,255,.05);border:1px solid rgba(212,175,55,.2);border-radius:.7rem;color:var(--cream);font-family:var(--ff-b);font-size:.93rem;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:.7rem;}
+    .opt:hover:not(:disabled){border-color:var(--gold);background:rgba(212,175,55,.08);}
+    .opt-letter{width:26px;height:26px;border-radius:50%;background:rgba(212,175,55,.15);border:1px solid rgba(212,175,55,.3);display:flex;align-items:center;justify-content:center;font-family:var(--ff-s);font-size:.75rem;font-weight:700;color:var(--gold);flex-shrink:0;}
+    .opt.correct{background:rgba(49,75,54,.5);border-color:#4caf50;}
+    .opt.correct .opt-letter{background:#4caf50;border-color:#4caf50;color:#fff;}
+    .opt.wrong{background:rgba(197,69,46,.25);border-color:var(--red);}
+    .opt.wrong .opt-letter{background:var(--red);border-color:var(--red);color:#fff;}
+    .opt:disabled{cursor:default;}
+    .feedback{text-align:center;font-family:var(--ff-s);font-size:.95rem;font-weight:600;min-height:1.4rem;padding:.5rem;border-radius:.5rem;}
+    .feedback.correct{background:rgba(49,75,54,.4);color:#81c784;}
+    .feedback.wrong{background:rgba(197,69,46,.2);color:#ef9a9a;}
+    /* RESULT */
+    .result-trophy{font-size:4rem;text-align:center;line-height:1;}
+    .result-title{font-family:var(--ff-t);font-size:2.4rem;letter-spacing:.05em;color:var(--gold);text-align:center;}
+    .result-score{font-family:var(--ff-t);font-size:3.5rem;color:var(--cream);text-align:center;line-height:1;}
+    .result-score span{font-size:1.4rem;color:var(--muted);}
+    .result-msg{color:var(--muted);line-height:1.6;font-size:.92rem;text-align:center;}
+    .result-stats{display:flex;justify-content:center;gap:2rem;padding:1rem 0;border-top:1px solid rgba(212,175,55,.15);border-bottom:1px solid rgba(212,175,55,.15);}
+    .r-stat{display:flex;flex-direction:column;align-items:center;gap:.2rem;}
+    .r-stat-val{font-family:var(--ff-t);font-size:2rem;color:var(--gold);}
+    .r-stat-label{font-family:var(--ff-s);font-size:.68rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);}
     /* RANKING */
-    #screen-ranking { display: none; flex-direction: column; gap: 1.2rem; }
-    .ranking-title { font-family: var(--ff-title); font-size: 2rem; color: var(--gold); text-align: center; letter-spacing: .05em; }
-    .ranking-list { display: flex; flex-direction: column; gap: .6rem; }
-    .rank-item {
-      display: flex; align-items: center; gap: 1rem;
-      background: rgba(255,255,255,.04); border: 1px solid rgba(212,175,55,.15);
-      border-radius: .7rem; padding: .75rem 1rem;
-    }
-    .rank-item.me { border-color: var(--gold); background: rgba(212,175,55,.08); }
-    .rank-pos { font-family: var(--ff-title); font-size: 1.4rem; color: var(--text-muted); width: 28px; text-align: center; flex-shrink: 0; }
-    .rank-pos.gold { color: #FFD700; }
-    .rank-pos.silver { color: #C0C0C0; }
-    .rank-pos.bronze { color: #CD7F32; }
-    .rank-name { flex: 1; font-family: var(--ff-sub); font-weight: 600; font-size: .95rem; }
-    .rank-score { font-family: var(--ff-title); font-size: 1.4rem; color: var(--gold); }
-    .rank-date { font-size: .72rem; color: var(--text-muted); }
-    .empty-ranking { text-align: center; color: var(--text-muted); padding: 2rem; font-size: .9rem; }
-
-    /* LOADING */
-    .loading { text-align: center; padding: 2rem; color: var(--text-muted); }
-    .spinner { display: inline-block; width: 32px; height: 32px; border: 3px solid rgba(212,175,55,.2); border-top-color: var(--gold); border-radius: 50%; animation: spin .7s linear infinite; margin-bottom: .5rem; }
-    @keyframes spin { to { transform: rotate(360deg); } }
-
-    /* FOOTER LINK */
-    .back-link { margin-top: 2rem; text-align: center; }
-    .back-link a { color: var(--text-muted); font-size: .85rem; text-decoration: none; }
-    .back-link a:hover { color: var(--gold); }
-
-    .nav-tabs { display: flex; gap: .5rem; justify-content: center; }
-    .nav-tab {
-      padding: .4rem 1rem; border-radius: 2rem; border: 1px solid rgba(212,175,55,.25);
-      background: transparent; color: var(--text-muted); font-family: var(--ff-sub);
-      font-size: .8rem; letter-spacing: .06em; text-transform: uppercase; cursor: pointer;
-      transition: all .2s;
-    }
-    .nav-tab.active, .nav-tab:hover { background: rgba(212,175,55,.12); border-color: var(--gold); color: var(--gold); }
+    .rank-title{font-family:var(--ff-t);font-size:2rem;color:var(--gold);text-align:center;letter-spacing:.05em;}
+    .rank-subtitle{text-align:center;color:var(--muted);font-size:.82rem;}
+    .rank-list{display:flex;flex-direction:column;gap:.5rem;}
+    .rank-item{display:flex;align-items:center;gap:.9rem;background:rgba(255,255,255,.04);border:1px solid rgba(212,175,55,.12);border-radius:.7rem;padding:.7rem 1rem;}
+    .rank-item.me{border-color:var(--gold);background:rgba(212,175,55,.07);}
+    .rank-pos{font-family:var(--ff-t);font-size:1.4rem;width:28px;text-align:center;color:var(--muted);flex-shrink:0;}
+    .rank-info{flex:1;}
+    .rank-name{font-family:var(--ff-s);font-weight:600;font-size:.92rem;}
+    .rank-detail{font-size:.7rem;color:var(--muted);}
+    .rank-pts{font-family:var(--ff-t);font-size:1.4rem;color:var(--gold);}
+    .empty{text-align:center;color:var(--muted);padding:2rem;font-size:.88rem;}
+    .spinner-wrap{text-align:center;padding:2rem;}
+    .spinner{display:inline-block;width:28px;height:28px;border:3px solid rgba(212,175,55,.2);border-top-color:var(--gold);border-radius:50%;animation:spin .7s linear infinite;}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .back-link{margin-top:2rem;text-align:center;}
+    .back-link a{color:var(--muted);font-size:.82rem;text-decoration:none;}
+    .back-link a:hover{color:var(--gold);}
+    .prize-banner{background:linear-gradient(135deg,rgba(212,175,55,.12),rgba(212,175,55,.04));border:1px solid rgba(212,175,55,.3);border-radius:.75rem;padding:1rem 1.25rem;text-align:center;}
+    .prize-banner .prize-icon{font-size:1.8rem;margin-bottom:.3rem;}
+    .prize-banner p{font-family:var(--ff-s);font-size:.85rem;color:var(--gold);font-weight:600;}
+    .prize-banner small{color:var(--muted);font-size:.75rem;}
   </style>
 </head>
 <body>
 
-  <div class="logo-wrap">
-    <img src="https://boolify-ia.github.io/web-images/PNG/LOGOLATRIBUNA90BLNACO.png" alt="La Tribuna 90">
-    <h1>Trivia Fútbol</h1>
-    <p>¿Cuánto sabes del deporte rey?</p>
+<div class="logo-wrap">
+  <img src="https://boolify-ia.github.io/web-images/PNG/LOGOLATRIBUNA90BLNACO.png" alt="La Tribuna 90">
+  <h1>Trivia Fútbol</h1>
+  <p>¿Cuánto sabes del deporte rey?</p>
+</div>
+
+<div class="card">
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="showTab('token')">🎮 Jugar</button>
+    <button class="nav-tab" onclick="showTab('ranking')">🏆 Ranking</button>
   </div>
 
-  <div class="card">
-
-    <!-- NAVEGACIÓN -->
-    <div class="nav-tabs" style="margin-bottom:1.5rem">
-      <button class="nav-tab active" onclick="showTab('token')">🎮 Jugar</button>
-      <button class="nav-tab" onclick="showTab('ranking')">🏆 Ranking</button>
+  <!-- TOKEN -->
+  <div id="screen-token" class="screen active">
+    <div class="screen-title">⚽ Ingresa tu código</div>
+    <p class="screen-desc">Solicita tu código único al mesero con cada pedido y demuestra que sabes de fútbol</p>
+    <div class="prize-banner">
+      <div class="prize-icon">🏆</div>
+      <p>Premio mensual al mejor del ranking</p>
+      <small>El jugador con más puntos al final de cada mes gana un premio especial en La Tribuna 90</small>
     </div>
-
-    <!-- SCREEN: TOKEN -->
-    <div id="screen-token">
-      <div class="screen-title">⚽ Ingresa tu código</div>
-      <p class="screen-desc">Solicita tu código único al mesero con cada pedido y demuestra que sabes de fútbol</p>
-      <div class="name-wrap">
-        <label for="input-name">Tu nombre o apodo</label>
-        <input id="input-name" type="text" placeholder="Ej: El Pibe, Ronaldito..." maxlength="30">
-      </div>
-      <div class="input-wrap">
-        <label for="input-token">Código del pedido</label>
-        <input id="input-token" type="text" placeholder="Ej: TRB-4X9K" maxlength="10">
-      </div>
-      <p class="err-msg" id="token-err"></p>
-      <button class="btn btn-gold" onclick="validateToken()">
-        <i class="fas fa-futbol"></i> ¡Entrar al campo!
-      </button>
+    <div class="field">
+      <label for="input-name">Tu nombre o apodo</label>
+      <input id="input-name" type="text" placeholder="Ej: El Pibe, Ronaldito..." maxlength="30">
     </div>
-
-    <!-- SCREEN: QUIZ -->
-    <div id="screen-quiz">
-      <div class="quiz-header">
-        <div>
-          <div class="quiz-progress" id="quiz-progress">Pregunta 1 de 10</div>
-          <div class="question-num" id="question-category">Categoría</div>
-        </div>
-        <div class="quiz-score-wrap">
-          <div class="quiz-score-label">Puntaje</div>
-          <div class="quiz-score-val" id="live-score">0</div>
-        </div>
-      </div>
-      <div class="progress-bar-wrap">
-        <div class="progress-bar" id="progress-bar" style="width:0%"></div>
-      </div>
-      <div class="timer-wrap" style="justify-content:center">
-        <div class="timer-circle" id="timer-display">15</div>
-        <span style="color:var(--text-muted);font-size:.8rem">segundos</span>
-      </div>
-      <div class="question-text" id="question-text">¿Cuántos jugadores tiene un equipo de fútbol?</div>
-      <div class="options-grid" id="options-grid"></div>
-      <div class="feedback-msg" id="feedback-msg"></div>
+    <div class="field">
+      <label for="input-token">Código del pedido</label>
+      <input id="input-token" type="text" placeholder="Ej: TRB-4X9K" maxlength="10" style="text-transform:uppercase;letter-spacing:.12em;">
     </div>
-
-    <!-- SCREEN: RESULT -->
-    <div id="screen-result">
-      <div class="result-trophy" id="result-trophy">🏆</div>
-      <div class="result-title" id="result-title">¡Eres un crack!</div>
-      <div class="result-score" id="result-score">800 <span>pts</span></div>
-      <p class="result-msg" id="result-msg"></p>
-      <div class="result-breakdown">
-        <div class="result-stat">
-          <div class="result-stat-val" id="stat-correct">0</div>
-          <div class="result-stat-label">Correctas</div>
-        </div>
-        <div class="result-stat">
-          <div class="result-stat-val" id="stat-wrong">0</div>
-          <div class="result-stat-label">Incorrectas</div>
-        </div>
-        <div class="result-stat">
-          <div class="result-stat-val" id="stat-time">0s</div>
-          <div class="result-stat-label">Tiempo prom.</div>
-        </div>
-      </div>
-      <button class="btn btn-outline" onclick="showTab('ranking')" style="width:100%">
-        <i class="fas fa-trophy"></i> Ver Ranking General
-      </button>
-    </div>
-
-    <!-- SCREEN: RANKING -->
-    <div id="screen-ranking">
-      <div class="ranking-title">🏆 Tabla de Posiciones</div>
-      <div id="ranking-list" class="ranking-list">
-        <div class="loading"><div class="spinner"></div><br>Cargando ranking...</div>
-      </div>
-      <button class="btn btn-outline" onclick="showTab('token')" style="width:100%;margin-top:.5rem">
-        <i class="fas fa-arrow-left"></i> Volver
-      </button>
-    </div>
-
+    <p class="err-msg" id="token-err"></p>
+    <button class="btn btn-gold" id="btn-start" onclick="validateToken()">
+      <i class="fas fa-futbol"></i> ¡Entrar al campo!
+    </button>
   </div>
 
-  <div class="back-link">
-    <a href="index.html"><i class="fas fa-arrow-left"></i> Volver a La Tribuna 90</a>
+  <!-- QUIZ -->
+  <div id="screen-quiz" class="screen">
+    <div class="quiz-header">
+      <div>
+        <div class="q-progress" id="q-progress">Pregunta 1 de 10</div>
+        <div class="q-cat" id="q-cat">Categoría</div>
+      </div>
+      <div class="score-wrap">
+        <div class="score-label">Puntaje</div>
+        <div class="score-val" id="live-score">0</div>
+      </div>
+    </div>
+    <div class="prog-bar-bg"><div class="prog-bar" id="prog-bar" style="width:0%"></div></div>
+    <div class="timer-row">
+      <div class="timer-circle" id="timer">15</div>
+      <span style="color:var(--muted);font-size:.78rem">segundos</span>
+    </div>
+    <div class="q-text" id="q-text"></div>
+    <div class="opts" id="opts"></div>
+    <div class="feedback" id="feedback"></div>
   </div>
 
-<script>
-// ============================================================
-// BANCO DE PREGUNTAS (40 preguntas, se eligen 10 al azar)
-// ============================================================
-const QUESTIONS = [
-  { q:"¿Cuántos jugadores tiene un equipo de fútbol en el campo?", opts:["9","10","11","12"], ans:2, cat:"Reglas" },
-  { q:"¿Cuántos minutos dura un partido oficial de fútbol?", opts:["80 min","90 min","100 min","120 min"], ans:1, cat:"Reglas" },
-  { q:"¿Cuántos balones de oro ha ganado Lionel Messi?", opts:["6","7","8","9"], ans:2, cat:"Historia" },
-  { q:"¿Qué país ha ganado más Copas del Mundo?", opts:["Alemania","Italia","Argentina","Brasil"], ans:3, cat:"Historia" },
-  { q:"¿En qué año ganó Colombia su primera Copa América?", opts:["1995","2001","2005","2011"], ans:1, cat:"Historia" },
-  { q:"¿Cuántos goles marcó Ronaldo (el Fenómeno) en Mundiales?", opts:["10","12","15","17"], ans:2, cat:"Historia" },
-  { q:"¿Qué club ha ganado más Champions League?", opts:["Barcelona","Bayern Munich","Real Madrid","AC Milan"], ans:2, cat:"Clubes" },
-  { q:"¿En qué país se jugó el Mundial 2022?", opts:["Arabia Saudita","Catar","Emiratos Árabes","Bahréin"], ans:1, cat:"Mundiales" },
-  { q:"¿Qué selección ganó el Mundial 2022?", opts:["Francia","Brasil","Argentina","Alemania"], ans:2, cat:"Mundiales" },
-  { q:"¿Cuántos mundiales ha ganado Brasil?", opts:["4","5","6","7"], ans:1, cat:"Mundiales" },
-  { q:"¿Qué jugador colombiano fue elegido el mejor del Mundial 2014 sub-20?", opts:["James Rodríguez","Radamel Falcao","Carlos Bacca","Cuadrado"], ans:0, cat:"Colombia" },
-  { q:"¿Cuántas Copas América ha ganado Uruguay?", opts:["13","15","17","19"], ans:2, cat:"Historia" },
-  { q:"¿Cuál es el estadio con mayor capacidad del mundo?", opts:["Camp Nou","Wembley","Rungrado","Maracaná"], ans:2, cat:"Estadios" },
-  { q:"¿Quién marcó el 'Gol del Siglo' en México 86?", opts:["Zidane","Ronaldo","Maradona","Platini"], ans:2, cat:"Historia" },
-  { q:"¿En qué año se fundó la FIFA?", opts:["1900","1904","1910","1920"], ans:1, cat:"Historia" },
-  { q:"¿Cuántos centímetros de diámetro tiene el balón oficial de fútbol?", opts:["20-22 cm","21-23 cm","22-24 cm","23-25 cm"], ans:1, cat:"Reglas" },
-  { q:"¿Qué distancia hay entre los postes de la portería?", opts:["6 metros","7.32 metros","8 metros","7 metros"], ans:1, cat:"Reglas" },
-  { q:"¿Cuándo se cobra penal si un defensa usa la mano?", opts:["Siempre","Solo en el área","Si fue intencional","Solo en últimos 10 min"], ans:1, cat:"Reglas" },
-  { q:"¿Qué selección ganó la Eurocopa 2020 (jugada en 2021)?", opts:["Francia","Italia","España","Portugal"], ans:1, cat:"Historia" },
-  { q:"¿Quién fue el máximo goleador del Mundial 2018?", opts:["Mbappé","Kane","Griezmann","Lukaku"], ans:1, cat:"Mundiales" },
-  { q:"¿Cuántos mundiales ha ganado Alemania?", opts:["3","4","5","6"], ans:1, cat:"Mundiales" },
-  { q:"¿En qué año Colombia clasificó por primera vez a un Mundial?", opts:["1958","1962","1966","1970"], ans:1, cat:"Colombia" },
-  { q:"¿Cuántos goles marcó Colombia en el Mundial de Brasil 2014?", opts:["10","12","14","16"], ans:2, cat:"Colombia" },
-  { q:"¿Qué jugador es apodado 'La Pulga'?", opts:["Neymar","Mbappé","Messi","Salah"], ans:2, cat:"Jugadores" },
-  { q:"¿En qué club debutó Cristiano Ronaldo como profesional?", opts:["Manchester United","Real Madrid","Sporting Lisboa","Juventus"], ans:2, cat:"Jugadores" },
-  { q:"¿Cuántos goles lleva Cristiano Ronaldo en selecciones hasta 2024?", opts:["105","110","122","130"], ans:2, cat:"Jugadores" },
-  { q:"¿Qué selección tiene el apodo de 'La Roja'?", opts:["Chile","Colombia","España","Perú"], ans:2, cat:"Selecciones" },
-  { q:"¿Qué equipo ganó la Copa Libertadores 2023?", opts:["Flamengo","Boca Juniors","Fluminense","River Plate"], ans:2, cat:"Clubes" },
-  { q:"¿Cuántos jugadores puede cambiar un equipo en un partido oficial?", opts:["3","4","5","6"], ans:2, cat:"Reglas" },
-  { q:"¿Qué color de tarjeta expulsa a un jugador?", opts:["Amarilla","Roja","Azul","Naranja"], ans:1, cat:"Reglas" },
-  { q:"¿Quién entrenó a Colombia en el Mundial 2014?", opts:["Hernán Darío Gómez","José Pékerman","Reinaldo Rueda","Carlos Queiroz"], ans:1, cat:"Colombia" },
-  { q:"¿Cuántos mundiales ha ganado Italia?", opts:["3","4","5","6"], ans:1, cat:"Mundiales" },
-  { q:"¿Dónde se jugará el Mundial 2026?", opts:["Europa","Asia","EE.UU, Canadá y México","Sudamérica"], ans:2, cat:"Mundiales" },
-  { q:"¿Cuál es el trofeo más importante a nivel de clubes en Europa?", opts:["UEFA Europa League","Champions League","Supercopa UEFA","Copa del Rey"], ans:1, cat:"Clubes" },
-  { q:"¿En qué posición juega un portero?", opts:["Defensa","Mediocampista","Delantero","Arquero"], ans:3, cat:"Reglas" },
-  { q:"¿Qué selección ganó la Copa América 2024?", opts:["Brasil","Uruguay","Argentina","Colombia"], ans:2, cat:"Historia" },
-  { q:"¿Cuántas ligas ganó Falcao con el Atlético de Madrid?", opts:["0","1","2","3"], ans:1, cat:"Colombia" },
-  { q:"¿Qué estadio es conocido como 'La Catedral del Fútbol'?", opts:["San Siro","Maracaná","Wembley","Camp Nou"], ans:2, cat:"Estadios" },
-  { q:"¿Cuántos árbitros hay en un partido oficial de fútbol?", opts:["1","2","3","4"], ans:3, cat:"Reglas" },
-  { q:"¿Qué significa VAR?", opts:["Video Asistente al Referee","Video Árbitro en Red","Verificación Árbitro Remoto","Video Árbitro Revisión"], ans:0, cat:"Reglas" },
-];
+  <!-- RESULT -->
+  <div id="screen-result" class="screen">
+    <div class="result-trophy" id="r-trophy">🏆</div>
+    <div class="result-title" id="r-title">¡Eres un crack!</div>
+    <div class="result-score" id="r-score">0 <span>pts</span></div>
+    <p class="result-msg" id="r-msg"></p>
+    <div class="result-stats">
+      <div class="r-stat"><div class="r-stat-val" id="r-correct">0</div><div class="r-stat-label">Correctas</div></div>
+      <div class="r-stat"><div class="r-stat-val" id="r-wrong">0</div><div class="r-stat-label">Incorrectas</div></div>
+      <div class="r-stat"><div class="r-stat-val" id="r-time">0s</div><div class="r-stat-label">Tiempo prom.</div></div>
+    </div>
+    <button class="btn btn-outline" onclick="showTab('ranking')">
+      <i class="fas fa-trophy"></i> Ver Ranking del Mes
+    </button>
+  </div>
 
-const QUESTIONS_PER_GAME = 10;
-const SECONDS_PER_Q = 15;
-const POINTS_PER_CORRECT = 100;
-const BONUS_PER_SECOND = 5;
+  <!-- RANKING -->
+  <div id="screen-ranking" class="screen">
+    <div class="rank-title">🏆 Ranking del Mes</div>
+    <p class="rank-subtitle">El #1 al cierre del mes gana el premio especial</p>
+    <div class="prize-banner" style="padding:.75rem">
+      <div class="prize-icon" style="font-size:1.4rem;">🎁</div>
+      <p style="font-size:.8rem">Premio mensual · Solo en La Tribuna 90</p>
+    </div>
+    <div id="rank-list" class="rank-list">
+      <div class="spinner-wrap"><div class="spinner"></div></div>
+    </div>
+    <button class="btn btn-outline" onclick="showTab('token')">
+      <i class="fas fa-arrow-left"></i> Volver
+    </button>
+  </div>
+</div>
 
-// ============================================================
-// STATE
-// ============================================================
-let state = {
-  token: null,
-  userName: null,
-  questions: [],
-  current: 0,
-  score: 0,
-  correct: 0,
-  wrong: 0,
-  totalTime: 0,
-  timer: null,
-  secondsLeft: SECONDS_PER_Q,
-  answered: false,
+<div class="back-link">
+  <a href="index.html"><i class="fas fa-arrow-left"></i> Volver a La Tribuna 90</a>
+</div>
+
+<!-- FIREBASE -->
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, query, orderBy, limit, getDocs, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDpSwCwCwGtm2EXML5HWFrajqfKeZMff48",
+  authDomain: "latribuna90-static-web.firebaseapp.com",
+  databaseURL: "https://latribuna90-static-web-default-rtdb.firebaseio.com",
+  projectId: "latribuna90-static-web",
+  storageBucket: "latribuna90-static-web.firebasestorage.app",
+  messagingSenderId: "961712839386",
+  appId: "1:961712839386:web:94e1a3f6a000c7d9a823e3",
+  measurementId: "G-7D7PFEFH9K"
 };
 
-// ============================================================
-// STORAGE HELPERS (Artifact persistent storage)
-// ============================================================
-async function storageGet(key, shared=true) {
-  try {
-    const r = await window.storage.get(key, shared);
-    return r ? JSON.parse(r.value) : null;
-  } catch { return null; }
-}
-async function storageSet(key, val, shared=true) {
-  try { await window.storage.set(key, JSON.stringify(val), shared); } catch {}
-}
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
 
-// ============================================================
-// TOKEN VALIDATION
-// ============================================================
-async function validateToken() {
-  const name = document.getElementById('input-name').value.trim();
+// ── PREGUNTAS ──────────────────────────────────────────────
+const QUESTIONS = [
+  {q:"¿Cuántos jugadores tiene un equipo de fútbol en el campo?",opts:["9","10","11","12"],ans:2,cat:"Reglas"},
+  {q:"¿Cuántos minutos dura un partido oficial de fútbol?",opts:["80 min","90 min","100 min","120 min"],ans:1,cat:"Reglas"},
+  {q:"¿Cuántos balones de oro ha ganado Lionel Messi?",opts:["6","7","8","9"],ans:2,cat:"Historia"},
+  {q:"¿Qué país ha ganado más Copas del Mundo?",opts:["Alemania","Italia","Argentina","Brasil"],ans:3,cat:"Historia"},
+  {q:"¿En qué año ganó Colombia su primera Copa América?",opts:["1995","2001","2005","2011"],ans:1,cat:"Colombia"},
+  {q:"¿Cuántos goles marcó Ronaldo (el Fenómeno) en Mundiales?",opts:["10","12","15","17"],ans:2,cat:"Historia"},
+  {q:"¿Qué club ha ganado más Champions League?",opts:["Barcelona","Bayern Munich","Real Madrid","AC Milan"],ans:2,cat:"Clubes"},
+  {q:"¿En qué país se jugó el Mundial 2022?",opts:["Arabia Saudita","Catar","Emiratos Árabes","Bahréin"],ans:1,cat:"Mundiales"},
+  {q:"¿Qué selección ganó el Mundial 2022?",opts:["Francia","Brasil","Argentina","Alemania"],ans:2,cat:"Mundiales"},
+  {q:"¿Cuántos mundiales ha ganado Brasil?",opts:["4","5","6","7"],ans:1,cat:"Mundiales"},
+  {q:"¿Qué jugador colombiano ganó el Balón de Oro del Mundial 2014?",opts:["James Rodríguez","Radamel Falcao","Carlos Bacca","Cuadrado"],ans:0,cat:"Colombia"},
+  {q:"¿Cuántas Copas América ha ganado Uruguay?",opts:["13","15","17","19"],ans:2,cat:"Historia"},
+  {q:"¿Cuál es el estadio con mayor capacidad del mundo?",opts:["Camp Nou","Wembley","Rungrado","Maracaná"],ans:2,cat:"Estadios"},
+  {q:"¿Quién marcó el 'Gol del Siglo' en México 86?",opts:["Zidane","Ronaldo","Maradona","Platini"],ans:2,cat:"Historia"},
+  {q:"¿En qué año se fundó la FIFA?",opts:["1900","1904","1910","1920"],ans:1,cat:"Historia"},
+  {q:"¿Qué distancia hay entre los postes de la portería?",opts:["6 metros","7.32 metros","8 metros","7 metros"],ans:1,cat:"Reglas"},
+  {q:"¿Qué selección ganó la Eurocopa 2020 (jugada en 2021)?",opts:["Francia","Italia","España","Portugal"],ans:1,cat:"Historia"},
+  {q:"¿Quién fue el máximo goleador del Mundial 2018?",opts:["Mbappé","Kane","Griezmann","Lukaku"],ans:1,cat:"Mundiales"},
+  {q:"¿Cuántos mundiales ha ganado Alemania?",opts:["3","4","5","6"],ans:1,cat:"Mundiales"},
+  {q:"¿En qué año Colombia clasificó por primera vez a un Mundial?",opts:["1958","1962","1966","1970"],ans:1,cat:"Colombia"},
+  {q:"¿Cuántos goles marcó Colombia en el Mundial de Brasil 2014?",opts:["10","12","14","16"],ans:2,cat:"Colombia"},
+  {q:"¿Qué jugador es apodado 'La Pulga'?",opts:["Neymar","Mbappé","Messi","Salah"],ans:2,cat:"Jugadores"},
+  {q:"¿En qué club debutó Cristiano Ronaldo como profesional?",opts:["Manchester United","Real Madrid","Sporting Lisboa","Juventus"],ans:2,cat:"Jugadores"},
+  {q:"¿Qué selección tiene el apodo de 'La Roja'?",opts:["Chile","Colombia","España","Perú"],ans:2,cat:"Selecciones"},
+  {q:"¿Cuántos jugadores puede cambiar un equipo en un partido oficial?",opts:["3","4","5","6"],ans:2,cat:"Reglas"},
+  {q:"¿Qué color de tarjeta expulsa a un jugador?",opts:["Amarilla","Roja","Azul","Naranja"],ans:1,cat:"Reglas"},
+  {q:"¿Quién entrenó a Colombia en el Mundial 2014?",opts:["Hernán Darío Gómez","José Pékerman","Reinaldo Rueda","Carlos Queiroz"],ans:1,cat:"Colombia"},
+  {q:"¿Cuántos mundiales ha ganado Italia?",opts:["3","4","5","6"],ans:1,cat:"Mundiales"},
+  {q:"¿Dónde se jugará el Mundial 2026?",opts:["Europa","Asia","EE.UU, Canadá y México","Sudamérica"],ans:2,cat:"Mundiales"},
+  {q:"¿Qué selección ganó la Copa América 2024?",opts:["Brasil","Uruguay","Argentina","Colombia"],ans:2,cat:"Historia"},
+  {q:"¿Cuántas ligas ganó Falcao con el Atlético de Madrid?",opts:["0","1","2","3"],ans:1,cat:"Colombia"},
+  {q:"¿Qué estadio es conocido como 'La Catedral del Fútbol'?",opts:["San Siro","Maracaná","Wembley","Camp Nou"],ans:2,cat:"Estadios"},
+  {q:"¿Cuántos árbitros hay en un partido oficial de fútbol?",opts:["1","2","3","4"],ans:3,cat:"Reglas"},
+  {q:"¿Qué significa VAR?",opts:["Video Asistente al Referee","Video Árbitro en Red","Verificación Árbitro Remoto","Video Árbitro Revisión"],ans:0,cat:"Reglas"},
+  {q:"¿Quién es el máximo goleador histórico de la Champions League?",opts:["Messi","Raúl","Cristiano Ronaldo","Benzema"],ans:2,cat:"Clubes"},
+  {q:"¿En qué año se jugó el primer Mundial de Fútbol?",opts:["1926","1930","1934","1938"],ans:1,cat:"Historia"},
+  {q:"¿Cuál es el récord de goles en una sola edición del Mundial?",opts:["171","172","173","174"],ans:2,cat:"Mundiales"},
+  {q:"¿Qué equipo colombiano ha ganado más veces la Copa Libertadores?",opts:["Atlético Nacional","Millonarios","América de Cali","Junior"],ans:0,cat:"Colombia"},
+  {q:"¿Cuántos goles necesita un jugador para lograr un hat-trick?",opts:["2","3","4","5"],ans:1,cat:"Reglas"},
+  {q:"¿Qué país organizó el Mundial 1994?",opts:["México","Brasil","Estados Unidos","Italia"],ans:2,cat:"Mundiales"},
+];
+
+const PER_GAME = 10;
+const SECS = 15;
+const PTS_BASE = 100;
+const PTS_BONUS = 5;
+
+// ── STATE ──────────────────────────────────────────────────
+let S = { token:null, name:null, questions:[], cur:0, score:0, correct:0, wrong:0, totalTime:0, timer:null, secs:SECS, answered:false };
+let currentUser = null;
+
+// ── TABS ───────────────────────────────────────────────────
+window.showTab = function(tab) {
+  document.querySelectorAll('.nav-tab').forEach((b,i) => b.classList.toggle('active', (tab==='token'&&i===0)||(tab==='ranking'&&i===1)));
+  ['token','quiz','result','ranking'].forEach(s => {
+    const el = document.getElementById('screen-'+s);
+    el.classList.toggle('active', s===tab);
+  });
+  if (tab === 'ranking') loadRanking();
+};
+
+// ── VALIDATE TOKEN ─────────────────────────────────────────
+window.validateToken = async function() {
+  const name  = document.getElementById('input-name').value.trim();
   const token = document.getElementById('input-token').value.trim().toUpperCase();
-  const errEl = document.getElementById('token-err');
-  const tokenInput = document.getElementById('input-token');
+  const err   = document.getElementById('token-err');
+  const btn   = document.getElementById('btn-start');
+  err.textContent = '';
 
-  errEl.textContent = '';
-  tokenInput.classList.remove('error');
+  if (!name)  { err.textContent = 'Por favor ingresa tu nombre o apodo'; return; }
+  if (!token) { err.textContent = 'Por favor ingresa tu código'; return; }
 
-  if (!name) { errEl.textContent = 'Por favor ingresa tu nombre o apodo'; return; }
-  if (!token) { errEl.textContent = 'Por favor ingresa tu código'; tokenInput.classList.add('error'); return; }
+  btn.disabled = true;
+  btn.textContent = 'Verificando...';
 
-  // Cargar tokens válidos desde storage compartido
-  const validTokens = await storageGet('trivia:valid-tokens') || {};
-  const usedTokens  = await storageGet('trivia:used-tokens')  || {};
+  try {
+    // Verificar token
+    const tokenDoc = await getDoc(doc(db, 'tokens', token));
+    if (!tokenDoc.exists()) {
+      err.textContent = '❌ Código inválido. Pídele uno nuevo al mesero.';
+      btn.disabled = false; btn.innerHTML = '<i class="fas fa-futbol"></i> ¡Entrar al campo!';
+      return;
+    }
+    const tData = tokenDoc.data();
+    if (tData.used) {
+      err.textContent = '⚠️ Este código ya fue utilizado. Cada código es de un solo uso.';
+      btn.disabled = false; btn.innerHTML = '<i class="fas fa-futbol"></i> ¡Entrar al campo!';
+      return;
+    }
 
-  if (!validTokens[token]) {
-    errEl.textContent = '❌ Código inválido. Pídele uno nuevo al mesero.';
-    tokenInput.classList.add('error'); return;
+    // Marcar usado
+    await updateDoc(doc(db, 'tokens', token), { used: true, usedBy: name, usedAt: serverTimestamp() });
+
+    // Preguntas ya vistas por este jugador
+    const playerDoc = await getDoc(doc(db, 'players', name.toLowerCase()));
+    const seen = playerDoc.exists() ? (playerDoc.data().seen || []) : [];
+    const available = QUESTIONS.map((_,i)=>i).filter(i=>!seen.includes(i));
+    const pool = available.length >= PER_GAME ? available : QUESTIONS.map((_,i)=>i);
+    const picked = shuffle(pool).slice(0, PER_GAME);
+
+    // Guardar vistas
+    const newSeen = [...new Set([...seen, ...picked])];
+    await setDoc(doc(db, 'players', name.toLowerCase()), { seen: newSeen, name }, { merge: true });
+
+    S = { token, name, questions: picked.map(i=>QUESTIONS[i]), cur:0, score:0, correct:0, wrong:0, totalTime:0, timer:null, secs:SECS, answered:false };
+    currentUser = name;
+    startQuiz();
+  } catch(e) {
+    err.textContent = 'Error de conexión. Intenta de nuevo.';
+    console.error(e);
   }
-  if (usedTokens[token]) {
-    errEl.textContent = '⚠️ Este código ya fue utilizado. Cada código es de un solo uso.';
-    tokenInput.classList.add('error'); return;
-  }
+  btn.disabled = false;
+  btn.innerHTML = '<i class="fas fa-futbol"></i> ¡Entrar al campo!';
+};
 
-  // Marcar como usado
-  usedTokens[token] = { name, date: new Date().toISOString() };
-  await storageSet('trivia:used-tokens', usedTokens);
-
-  // Cargar preguntas ya vistas por este usuario (por nombre)
-  const seenKey = `trivia:seen:${name.toLowerCase().replace(/\s+/g,'-')}`;
-  const seen = await storageGet(seenKey) || [];
-
-  // Seleccionar preguntas no vistas
-  const available = QUESTIONS.filter((_, i) => !seen.includes(i));
-  const pool = available.length >= QUESTIONS_PER_GAME ? available : QUESTIONS;
-  const poolIndices = pool === available
-    ? QUESTIONS.map((_, i) => i).filter(i => !seen.includes(i))
-    : QUESTIONS.map((_, i) => i);
-
-  const picked = shuffle(poolIndices).slice(0, QUESTIONS_PER_GAME);
-
-  // Guardar vistas
-  const newSeen = [...new Set([...seen, ...picked])];
-  await storageSet(seenKey, newSeen, false); // personal
-
-  state.token = token;
-  state.userName = name;
-  state.questions = picked.map(i => QUESTIONS[i]);
-  state.current = 0;
-  state.score = 0;
-  state.correct = 0;
-  state.wrong = 0;
-  state.totalTime = 0;
-
-  startQuiz();
-}
-
-// ============================================================
-// QUIZ
-// ============================================================
+// ── QUIZ ───────────────────────────────────────────────────
 function startQuiz() {
-  document.getElementById('screen-token').style.display = 'none';
-  document.getElementById('screen-quiz').style.display = 'flex';
+  showTab('quiz');
   showQuestion();
 }
 
 function showQuestion() {
-  const q = state.questions[state.current];
-  const total = state.questions.length;
+  const q = S.questions[S.cur];
+  const total = S.questions.length;
+  document.getElementById('q-progress').textContent = `Pregunta ${S.cur+1} de ${total}`;
+  document.getElementById('q-cat').textContent = q.cat;
+  document.getElementById('q-text').textContent = q.q;
+  document.getElementById('live-score').textContent = S.score;
+  document.getElementById('prog-bar').style.width = `${(S.cur/total)*100}%`;
+  document.getElementById('feedback').textContent = '';
+  document.getElementById('feedback').className = 'feedback';
 
-  document.getElementById('quiz-progress').textContent = `Pregunta ${state.current + 1} de ${total}`;
-  document.getElementById('question-category').textContent = q.cat;
-  document.getElementById('question-text').textContent = q.q;
-  document.getElementById('live-score').textContent = state.score;
-  document.getElementById('progress-bar').style.width = `${(state.current / total) * 100}%`;
-  document.getElementById('feedback-msg').textContent = '';
-  document.getElementById('feedback-msg').className = 'feedback-msg';
-
-  const grid = document.getElementById('options-grid');
-  grid.innerHTML = '';
-  const letters = ['A','B','C','D'];
-  q.opts.forEach((opt, i) => {
+  const opts = document.getElementById('opts');
+  opts.innerHTML = '';
+  ['A','B','C','D'].forEach((l,i) => {
     const btn = document.createElement('button');
-    btn.className = 'opt-btn';
-    btn.innerHTML = `<span class="opt-letter">${letters[i]}</span>${opt}`;
-    btn.onclick = () => selectAnswer(i);
-    grid.appendChild(btn);
+    btn.className = 'opt';
+    btn.innerHTML = `<span class="opt-letter">${l}</span>${q.opts[i]}`;
+    btn.onclick = () => pick(i);
+    opts.appendChild(btn);
   });
 
-  state.answered = false;
+  S.answered = false;
   startTimer();
 }
 
 function startTimer() {
-  state.secondsLeft = SECONDS_PER_Q;
-  const el = document.getElementById('timer-display');
-  el.textContent = SECONDS_PER_Q;
+  S.secs = SECS;
+  const el = document.getElementById('timer');
+  el.textContent = SECS;
   el.classList.remove('urgent');
-  clearInterval(state.timer);
-  state.timer = setInterval(() => {
-    state.secondsLeft--;
-    el.textContent = state.secondsLeft;
-    if (state.secondsLeft <= 5) el.classList.add('urgent');
-    if (state.secondsLeft <= 0) {
-      clearInterval(state.timer);
-      if (!state.answered) timeOut();
-    }
+  clearInterval(S.timer);
+  S.timer = setInterval(() => {
+    S.secs--;
+    el.textContent = S.secs;
+    if (S.secs <= 5) el.classList.add('urgent');
+    if (S.secs <= 0) { clearInterval(S.timer); if (!S.answered) timeOut(); }
   }, 1000);
 }
 
 function timeOut() {
-  state.answered = true;
-  state.wrong++;
-  state.totalTime += SECONDS_PER_Q;
-  const q = state.questions[state.current];
-  const btns = document.querySelectorAll('.opt-btn');
+  S.answered = true; S.wrong++; S.totalTime += SECS;
+  const btns = document.querySelectorAll('.opt');
   btns.forEach(b => b.disabled = true);
-  btns[q.ans].classList.add('correct');
-  showFeedback(false, '⏱️ ¡Se acabó el tiempo! La respuesta correcta era otra.');
-  setTimeout(nextQuestion, 2000);
+  btns[S.questions[S.cur].ans].classList.add('correct');
+  feedback(false, '⏱️ ¡Se acabó el tiempo!');
+  setTimeout(next, 2000);
 }
 
-function selectAnswer(idx) {
-  if (state.answered) return;
-  state.answered = true;
-  clearInterval(state.timer);
-
-  const q = state.questions[state.current];
-  const timeUsed = SECONDS_PER_Q - state.secondsLeft;
-  state.totalTime += timeUsed;
-
-  const btns = document.querySelectorAll('.opt-btn');
+function pick(idx) {
+  if (S.answered) return;
+  S.answered = true;
+  clearInterval(S.timer);
+  const q = S.questions[S.cur];
+  const used = SECS - S.secs;
+  S.totalTime += used;
+  const btns = document.querySelectorAll('.opt');
   btns.forEach(b => b.disabled = true);
-
   if (idx === q.ans) {
     btns[idx].classList.add('correct');
-    const bonus = state.secondsLeft * BONUS_PER_SECOND;
-    const pts = POINTS_PER_CORRECT + bonus;
-    state.score += pts;
-    state.correct++;
-    document.getElementById('live-score').textContent = state.score;
-    showFeedback(true, `✅ ¡Correcto! +${pts} pts (${bonus} pts de bonificación por velocidad)`);
+    const bonus = S.secs * PTS_BONUS;
+    const pts = PTS_BASE + bonus;
+    S.score += pts; S.correct++;
+    document.getElementById('live-score').textContent = S.score;
+    feedback(true, `✅ ¡Correcto! +${pts} pts`);
   } else {
     btns[idx].classList.add('wrong');
     btns[q.ans].classList.add('correct');
-    state.wrong++;
-    showFeedback(false, `❌ Incorrecto. La respuesta era: ${q.opts[q.ans]}`);
+    S.wrong++;
+    feedback(false, `❌ La respuesta era: ${q.opts[q.ans]}`);
   }
-
-  setTimeout(nextQuestion, 2200);
+  setTimeout(next, 2200);
 }
 
-function showFeedback(correct, msg) {
-  const el = document.getElementById('feedback-msg');
+function feedback(ok, msg) {
+  const el = document.getElementById('feedback');
   el.textContent = msg;
-  el.className = `feedback-msg ${correct ? 'correct' : 'wrong'}`;
+  el.className = `feedback ${ok?'correct':'wrong'}`;
 }
 
-function nextQuestion() {
-  state.current++;
-  if (state.current >= state.questions.length) {
-    endQuiz();
-  } else {
-    showQuestion();
-  }
+function next() {
+  S.cur++;
+  if (S.cur >= S.questions.length) endQuiz(); else showQuestion();
 }
 
-// ============================================================
-// END QUIZ
-// ============================================================
+// ── END ────────────────────────────────────────────────────
 async function endQuiz() {
-  clearInterval(state.timer);
+  clearInterval(S.timer);
+  const avg = Math.round(S.totalTime / S.questions.length);
+  const now = new Date();
+  const month = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
 
-  // Guardar en ranking compartido
-  const ranking = await storageGet('trivia:ranking') || [];
-  const avgTime = state.totalTime / state.questions.length;
-  ranking.push({
-    name: state.userName,
-    score: state.score,
-    correct: state.correct,
-    wrong: state.wrong,
-    avgTime: Math.round(avgTime),
-    date: new Date().toLocaleDateString('es-CO'),
+  // Guardar en ranking del mes
+  const rankId = `${month}_${S.name.toLowerCase().replace(/\s+/g,'-')}_${Date.now()}`;
+  await setDoc(doc(db, 'ranking', rankId), {
+    name: S.name, score: S.score, correct: S.correct, wrong: S.wrong,
+    avgTime: avg, month, date: now.toLocaleDateString('es-CO'), ts: serverTimestamp()
   });
-  ranking.sort((a, b) => b.score - a.score);
-  if (ranking.length > 100) ranking.splice(100);
-  await storageSet('trivia:ranking', ranking);
 
-  showResult();
+  // Resultado
+  const pct = (S.correct / S.questions.length) * 100;
+  let trophy='⚽', title='¡Sigue entrenando!', msg='No te desanimes, la próxima vez lo harás mejor.';
+  if (pct>=90){trophy='🏆';title='¡Eres un crack total!';msg='Impresionante. Muéstrale tu puntaje al mesero, ¡podrías ganar el premio del mes!';}
+  else if(pct>=70){trophy='⭐';title='¡Gran partido!';msg='Muy buen resultado. Estás en la pelea por el premio mensual.';}
+  else if(pct>=50){trophy='🎯';title='¡Buen intento!';msg='Pasaste la mitad. Un poco más de repaso y llegas al top.';}
+
+  document.getElementById('r-trophy').textContent = trophy;
+  document.getElementById('r-title').textContent = title;
+  document.getElementById('r-score').innerHTML = `${S.score} <span>pts</span>`;
+  document.getElementById('r-msg').textContent = msg;
+  document.getElementById('r-correct').textContent = S.correct;
+  document.getElementById('r-wrong').textContent = S.wrong;
+  document.getElementById('r-time').textContent = `${avg}s`;
+
+  showTab('result');
 }
 
-function showResult() {
-  document.getElementById('screen-quiz').style.display = 'none';
-  document.getElementById('screen-result').style.display = 'flex';
-
-  const pct = (state.correct / state.questions.length) * 100;
-  let trophy = '⚽', title = '¡Sigue entrenando!', msg = 'No te preocupes, la próxima vez lo harás mejor. ¡El fútbol se aprende jugando!';
-  if (pct >= 90) { trophy = '🏆'; title = '¡Eres un crack total!'; msg = 'Impresionante. Claramente eres el crack de La Tribuna 90. ¡Muéstrale tu puntaje al mesero y reclama tu reconocimiento!'; }
-  else if (pct >= 70) { trophy = '⭐'; title = '¡Gran partido!'; msg = 'Muy buen resultado. Definitivamente sabes de fútbol. ¡Sigue así!'; }
-  else if (pct >= 50) { trophy = '🎯'; title = '¡Buen intento!'; msg = 'Pasaste la mitad. Con un poco más de repaso llegas al top del ranking.'; }
-
-  document.getElementById('result-trophy').textContent = trophy;
-  document.getElementById('result-title').textContent = title;
-  document.getElementById('result-score').innerHTML = `${state.score} <span>pts</span>`;
-  document.getElementById('result-msg').textContent = msg;
-  document.getElementById('stat-correct').textContent = state.correct;
-  document.getElementById('stat-wrong').textContent = state.wrong;
-  document.getElementById('stat-time').textContent = `${Math.round(state.totalTime / state.questions.length)}s`;
-}
-
-// ============================================================
-// RANKING
-// ============================================================
+// ── RANKING ────────────────────────────────────────────────
 async function loadRanking() {
-  const el = document.getElementById('ranking-list');
-  el.innerHTML = '<div class="loading"><div class="spinner"></div><br>Cargando...</div>';
-  const ranking = await storageGet('trivia:ranking') || [];
-  if (!ranking.length) {
-    el.innerHTML = '<div class="empty-ranking">🏟️ Aún no hay partidas registradas.<br>¡Sé el primero en jugar!</div>';
-    return;
-  }
-  const medals = ['gold','silver','bronze'];
-  el.innerHTML = ranking.slice(0, 20).map((r, i) => `
-    <div class="rank-item ${state.userName && r.name === state.userName ? 'me' : ''}">
-      <div class="rank-pos ${medals[i] || ''}">${i < 3 ? ['🥇','🥈','🥉'][i] : i+1}</div>
-      <div>
-        <div class="rank-name">${r.name}</div>
-        <div class="rank-date">${r.correct}/${r.correct + r.wrong} correctas · ${r.date}</div>
+  const el = document.getElementById('rank-list');
+  el.innerHTML = '<div class="spinner-wrap"><div class="spinner"></div></div>';
+
+  const now = new Date();
+  const month = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+
+  try {
+    const q = query(collection(db,'ranking'), orderBy('score','desc'), limit(20));
+    const snap = await getDocs(q);
+    const all = [];
+    snap.forEach(d => { const data = d.data(); if(data.month===month) all.push(data); });
+    // Si no hay del mes actual mostramos todos
+    const items = all.length ? all : snap.docs.map(d=>d.data());
+
+    if (!items.length) { el.innerHTML = '<div class="empty">🏟️ Aún no hay partidas este mes.<br>¡Sé el primero en jugar!</div>'; return; }
+
+    const medals = ['🥇','🥈','🥉'];
+    el.innerHTML = items.slice(0,20).map((r,i) => `
+      <div class="rank-item ${currentUser && r.name===currentUser?'me':''}">
+        <div class="rank-pos">${medals[i]||i+1}</div>
+        <div class="rank-info">
+          <div class="rank-name">${r.name}${currentUser&&r.name===currentUser?' (tú)':''}</div>
+          <div class="rank-detail">${r.correct}/${r.correct+r.wrong} correctas · prom. ${r.avgTime}s · ${r.date}</div>
+        </div>
+        <div class="rank-pts">${r.score}</div>
       </div>
-      <div class="rank-score">${r.score}</div>
-    </div>
-  `).join('');
-}
-
-// ============================================================
-// NAV TABS
-// ============================================================
-function showTab(tab) {
-  document.querySelectorAll('.nav-tab').forEach(b => b.classList.remove('active'));
-  document.querySelectorAll('.nav-tab')[tab === 'token' ? 0 : 1].classList.add('active');
-
-  document.getElementById('screen-token').style.display = 'none';
-  document.getElementById('screen-quiz').style.display = 'none';
-  document.getElementById('screen-result').style.display = 'none';
-  document.getElementById('screen-ranking').style.display = 'none';
-
-  if (tab === 'token') document.getElementById('screen-token').style.display = 'flex';
-  if (tab === 'ranking') { document.getElementById('screen-ranking').style.display = 'flex'; loadRanking(); }
-}
-
-// ============================================================
-// UTILS
-// ============================================================
-function shuffle(arr) {
-  const a = [...arr];
-  for (let i = a.length - 1; i > 0; i--) {
-    const j = Math.floor(Math.random() * (i + 1));
-    [a[i], a[j]] = [a[j], a[i]];
+    `).join('');
+  } catch(e) {
+    el.innerHTML = '<div class="empty">Error cargando ranking. Intenta de nuevo.</div>';
+    console.error(e);
   }
-  return a;
 }
+
+// ── UTILS ──────────────────────────────────────────────────
+function shuffle(a){const b=[...a];for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]];}return b;}
 </script>
 </body>
 </html>
