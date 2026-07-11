@@ -7,101 +7,104 @@
   <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Oswald:wght@400;600;700&family=Lato:wght@400;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
   <style>
-    :root {
-      --brown:#36130E; --brown-dark:#1a0a08; --green:#314B36;
-      --green-light:#3d5e43; --gold:#D4AF37; --red:#C5452E;
-      --cream:#F5F0E8; --muted:rgba(245,240,232,0.6);
-      --ff-t:'Bebas Neue',sans-serif; --ff-s:'Oswald',sans-serif; --ff-b:'Lato',sans-serif;
-    }
+    :root{--brown:#36130E;--brown-dark:#1a0a08;--green:#314B36;--gold:#D4AF37;--red:#C5452E;--cream:#F5F0E8;--muted:rgba(245,240,232,0.6);--ff-t:'Bebas Neue',sans-serif;--ff-s:'Oswald',sans-serif;--ff-b:'Lato',sans-serif;}
     *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
-    html{scroll-behavior:smooth;}
     body{font-family:var(--ff-b);background:var(--brown-dark);color:var(--cream);min-height:100vh;display:flex;flex-direction:column;align-items:center;padding:2rem 1rem 4rem;}
     .logo-wrap{text-align:center;margin-bottom:1.5rem;}
-    .logo-wrap img{height:64px;}
+    .logo-wrap img{height:62px;}
     .logo-wrap h1{font-family:var(--ff-t);font-size:2.6rem;letter-spacing:.06em;color:var(--gold);line-height:1;margin-top:.4rem;}
-    .logo-wrap p{color:var(--muted);font-size:.88rem;margin-top:.25rem;}
+    .logo-wrap p{color:var(--muted);font-size:.85rem;margin-top:.25rem;}
     .card{background:rgba(54,19,14,.65);border:1px solid rgba(212,175,55,.25);border-radius:1.2rem;padding:2rem;width:100%;max-width:520px;box-shadow:0 8px 40px rgba(0,0,0,.4);}
     .nav-tabs{display:flex;gap:.5rem;justify-content:center;margin-bottom:1.5rem;}
-    .nav-tab{padding:.4rem 1.1rem;border-radius:2rem;border:1px solid rgba(212,175,55,.25);background:transparent;color:var(--muted);font-family:var(--ff-s);font-size:.8rem;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;transition:all .2s;}
+    .nav-tab{padding:.4rem 1.1rem;border-radius:2rem;border:1px solid rgba(212,175,55,.25);background:transparent;color:var(--muted);font-family:var(--ff-s);font-size:.78rem;letter-spacing:.06em;text-transform:uppercase;cursor:pointer;transition:all .2s;}
     .nav-tab.active,.nav-tab:hover{background:rgba(212,175,55,.12);border-color:var(--gold);color:var(--gold);}
-    /* SCREENS */
-    .screen{display:none;flex-direction:column;gap:1.25rem;}
+    .screen{display:none;flex-direction:column;gap:1.2rem;}
     .screen.active{display:flex;}
-    .screen-title{font-family:var(--ff-s);font-size:1.25rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--gold);text-align:center;}
-    .screen-desc{color:var(--muted);text-align:center;font-size:.88rem;line-height:1.6;}
-    /* INPUTS */
-    .field{display:flex;flex-direction:column;gap:.4rem;}
-    .field label{font-family:var(--ff-s);font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);}
-    .field input{background:rgba(255,255,255,.06);border:1px solid rgba(212,175,55,.3);border-radius:.6rem;padding:.85rem 1rem;color:var(--cream);font-family:var(--ff-s);font-size:1rem;outline:none;transition:border-color .2s;width:100%;}
+    .screen-title{font-family:var(--ff-s);font-size:1.2rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--gold);text-align:center;}
+    .screen-desc{color:var(--muted);text-align:center;font-size:.86rem;line-height:1.6;}
+    .field{display:flex;flex-direction:column;gap:.38rem;}
+    .field label{font-family:var(--ff-s);font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);}
+    .field input{background:rgba(255,255,255,.06);border:1px solid rgba(212,175,55,.3);border-radius:.6rem;padding:.8rem 1rem;color:var(--cream);font-family:var(--ff-b);font-size:.95rem;outline:none;transition:border-color .2s;width:100%;}
     .field input:focus{border-color:var(--gold);}
     .field input.error{border-color:var(--red);}
     .field input::placeholder{color:rgba(245,240,232,.3);}
-    .err-msg{color:var(--red);font-size:.82rem;text-align:center;min-height:1rem;}
-    /* BUTTONS */
-    .btn{display:inline-flex;align-items:center;justify-content:center;gap:.45rem;font-family:var(--ff-s);font-weight:600;font-size:.95rem;letter-spacing:.08em;text-transform:uppercase;padding:.82rem 1.5rem;border-radius:.6rem;border:none;cursor:pointer;transition:all .2s;width:100%;}
+    .err-msg{color:var(--red);font-size:.8rem;text-align:center;min-height:1rem;}
+    .btn{display:inline-flex;align-items:center;justify-content:center;gap:.42rem;font-family:var(--ff-s);font-weight:600;font-size:.9rem;letter-spacing:.08em;text-transform:uppercase;padding:.8rem 1.5rem;border-radius:.6rem;border:none;cursor:pointer;transition:all .2s;width:100%;}
     .btn-gold{background:linear-gradient(135deg,var(--gold),#b8960c);color:var(--brown-dark);}
     .btn-gold:hover{filter:brightness(1.1);transform:translateY(-2px);}
     .btn-outline{background:transparent;border:1px solid var(--gold);color:var(--gold);}
     .btn-outline:hover{background:rgba(212,175,55,.1);}
+    .btn-ghost{background:transparent;border:none;color:var(--muted);font-size:.8rem;text-decoration:underline;cursor:pointer;padding:.4rem;}
     .btn:disabled{opacity:.45;cursor:not-allowed;transform:none;}
+    /* PRIZE BANNER */
+    .prize-banner{background:linear-gradient(135deg,rgba(212,175,55,.12),rgba(212,175,55,.03));border:1px solid rgba(212,175,55,.3);border-radius:.75rem;padding:.9rem 1.1rem;text-align:center;}
+    .prize-banner .pi{font-size:1.6rem;margin-bottom:.2rem;}
+    .prize-banner p{font-family:var(--ff-s);font-size:.82rem;color:var(--gold);font-weight:600;}
+    .prize-banner small{color:var(--muted);font-size:.72rem;}
+    /* DIVIDER */
+    .divider{display:flex;align-items:center;gap:.75rem;color:var(--muted);font-size:.75rem;}
+    .divider::before,.divider::after{content:'';flex:1;height:1px;background:rgba(212,175,55,.15);}
+    /* USER CARD */
+    .user-card{background:rgba(49,75,54,.2);border:1px solid rgba(49,75,54,.5);border-radius:.75rem;padding:1rem 1.2rem;display:flex;align-items:center;gap:.9rem;}
+    .user-avatar{width:44px;height:44px;border-radius:50%;background:linear-gradient(135deg,var(--gold),#b8960c);display:flex;align-items:center;justify-content:center;font-family:var(--ff-t);font-size:1.4rem;color:var(--brown-dark);flex-shrink:0;}
+    .user-info .user-name{font-family:var(--ff-s);font-weight:700;font-size:1rem;color:var(--gold);}
+    .user-info .user-pts{font-size:.75rem;color:var(--muted);}
     /* QUIZ */
     .quiz-header{display:flex;justify-content:space-between;align-items:flex-start;}
-    .q-progress{font-family:var(--ff-s);font-size:.78rem;color:var(--muted);}
-    .q-cat{font-family:var(--ff-s);font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);margin-top:.2rem;}
+    .q-meta .q-progress{font-family:var(--ff-s);font-size:.75rem;color:var(--muted);}
+    .q-meta .q-cat{font-family:var(--ff-s);font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--gold);margin-top:.2rem;}
     .score-wrap{text-align:right;}
-    .score-label{font-family:var(--ff-s);font-size:.65rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);}
-    .score-val{font-family:var(--ff-t);font-size:2rem;color:var(--gold);line-height:1;}
-    .prog-bar-bg{background:rgba(255,255,255,.08);border-radius:2rem;height:5px;overflow:hidden;}
+    .score-label{font-family:var(--ff-s);font-size:.62rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);}
+    .score-val{font-family:var(--ff-t);font-size:1.9rem;color:var(--gold);line-height:1;}
+    .prog-bg{background:rgba(255,255,255,.08);border-radius:2rem;height:5px;overflow:hidden;}
     .prog-bar{height:100%;background:linear-gradient(90deg,var(--gold),#b8960c);border-radius:2rem;transition:width .4s ease;}
-    .timer-row{display:flex;align-items:center;justify-content:center;gap:.6rem;}
-    .timer-circle{width:44px;height:44px;border-radius:50%;border:3px solid var(--gold);display:flex;align-items:center;justify-content:center;font-family:var(--ff-t);font-size:1.15rem;color:var(--gold);transition:border-color .3s,color .3s;}
+    .timer-row{display:flex;align-items:center;justify-content:center;gap:.5rem;}
+    .timer-circle{width:42px;height:42px;border-radius:50%;border:3px solid var(--gold);display:flex;align-items:center;justify-content:center;font-family:var(--ff-t);font-size:1.1rem;color:var(--gold);transition:all .3s;}
     .timer-circle.urgent{border-color:var(--red);color:var(--red);animation:blink .5s infinite;}
     @keyframes blink{0%,100%{opacity:1}50%{opacity:.4}}
-    .q-text{font-family:var(--ff-s);font-size:1.2rem;font-weight:600;line-height:1.45;}
-    .opts{display:flex;flex-direction:column;gap:.7rem;}
-    .opt{width:100%;text-align:left;padding:.85rem 1rem;background:rgba(255,255,255,.05);border:1px solid rgba(212,175,55,.2);border-radius:.7rem;color:var(--cream);font-family:var(--ff-b);font-size:.93rem;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:.7rem;}
+    .q-text{font-family:var(--ff-s);font-size:1.15rem;font-weight:600;line-height:1.45;}
+    .opts{display:flex;flex-direction:column;gap:.65rem;}
+    .opt{width:100%;text-align:left;padding:.8rem 1rem;background:rgba(255,255,255,.05);border:1px solid rgba(212,175,55,.2);border-radius:.7rem;color:var(--cream);font-family:var(--ff-b);font-size:.9rem;cursor:pointer;transition:all .2s;display:flex;align-items:center;gap:.65rem;}
     .opt:hover:not(:disabled){border-color:var(--gold);background:rgba(212,175,55,.08);}
-    .opt-letter{width:26px;height:26px;border-radius:50%;background:rgba(212,175,55,.15);border:1px solid rgba(212,175,55,.3);display:flex;align-items:center;justify-content:center;font-family:var(--ff-s);font-size:.75rem;font-weight:700;color:var(--gold);flex-shrink:0;}
+    .opt-letter{width:26px;height:26px;border-radius:50%;background:rgba(212,175,55,.15);border:1px solid rgba(212,175,55,.3);display:flex;align-items:center;justify-content:center;font-family:var(--ff-s);font-size:.72rem;font-weight:700;color:var(--gold);flex-shrink:0;}
     .opt.correct{background:rgba(49,75,54,.5);border-color:#4caf50;}
     .opt.correct .opt-letter{background:#4caf50;border-color:#4caf50;color:#fff;}
     .opt.wrong{background:rgba(197,69,46,.25);border-color:var(--red);}
     .opt.wrong .opt-letter{background:var(--red);border-color:var(--red);color:#fff;}
     .opt:disabled{cursor:default;}
-    .feedback{text-align:center;font-family:var(--ff-s);font-size:.95rem;font-weight:600;min-height:1.4rem;padding:.5rem;border-radius:.5rem;}
+    .feedback{text-align:center;font-family:var(--ff-s);font-size:.88rem;font-weight:600;min-height:1.2rem;padding:.45rem;border-radius:.5rem;}
     .feedback.correct{background:rgba(49,75,54,.4);color:#81c784;}
     .feedback.wrong{background:rgba(197,69,46,.2);color:#ef9a9a;}
     /* RESULT */
-    .result-trophy{font-size:4rem;text-align:center;line-height:1;}
-    .result-title{font-family:var(--ff-t);font-size:2.4rem;letter-spacing:.05em;color:var(--gold);text-align:center;}
-    .result-score{font-family:var(--ff-t);font-size:3.5rem;color:var(--cream);text-align:center;line-height:1;}
-    .result-score span{font-size:1.4rem;color:var(--muted);}
-    .result-msg{color:var(--muted);line-height:1.6;font-size:.92rem;text-align:center;}
-    .result-stats{display:flex;justify-content:center;gap:2rem;padding:1rem 0;border-top:1px solid rgba(212,175,55,.15);border-bottom:1px solid rgba(212,175,55,.15);}
+    .result-trophy{font-size:3.8rem;text-align:center;line-height:1;}
+    .result-title{font-family:var(--ff-t);font-size:2.3rem;letter-spacing:.05em;color:var(--gold);text-align:center;}
+    .result-score{font-family:var(--ff-t);font-size:3.2rem;color:var(--cream);text-align:center;line-height:1;}
+    .result-score span{font-size:1.3rem;color:var(--muted);}
+    .result-total{text-align:center;font-family:var(--ff-s);font-size:.82rem;color:var(--muted);margin-top:.3rem;}
+    .result-total strong{color:var(--gold);}
+    .result-msg{color:var(--muted);line-height:1.6;font-size:.88rem;text-align:center;}
+    .result-stats{display:flex;justify-content:center;gap:1.5rem;padding:.9rem 0;border-top:1px solid rgba(212,175,55,.15);border-bottom:1px solid rgba(212,175,55,.15);}
     .r-stat{display:flex;flex-direction:column;align-items:center;gap:.2rem;}
-    .r-stat-val{font-family:var(--ff-t);font-size:2rem;color:var(--gold);}
-    .r-stat-label{font-family:var(--ff-s);font-size:.68rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);}
+    .r-stat-val{font-family:var(--ff-t);font-size:1.9rem;color:var(--gold);}
+    .r-stat-label{font-family:var(--ff-s);font-size:.65rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);}
     /* RANKING */
     .rank-title{font-family:var(--ff-t);font-size:2rem;color:var(--gold);text-align:center;letter-spacing:.05em;}
-    .rank-subtitle{text-align:center;color:var(--muted);font-size:.82rem;}
-    .rank-list{display:flex;flex-direction:column;gap:.5rem;}
-    .rank-item{display:flex;align-items:center;gap:.9rem;background:rgba(255,255,255,.04);border:1px solid rgba(212,175,55,.12);border-radius:.7rem;padding:.7rem 1rem;}
+    .rank-subtitle{text-align:center;color:var(--muted);font-size:.8rem;}
+    .rank-list{display:flex;flex-direction:column;gap:.45rem;}
+    .rank-item{display:flex;align-items:center;gap:.85rem;background:rgba(255,255,255,.04);border:1px solid rgba(212,175,55,.1);border-radius:.7rem;padding:.65rem .9rem;}
     .rank-item.me{border-color:var(--gold);background:rgba(212,175,55,.07);}
-    .rank-pos{font-family:var(--ff-t);font-size:1.4rem;width:28px;text-align:center;color:var(--muted);flex-shrink:0;}
+    .rank-pos{font-family:var(--ff-t);font-size:1.3rem;width:26px;text-align:center;color:var(--muted);flex-shrink:0;}
     .rank-info{flex:1;}
-    .rank-name{font-family:var(--ff-s);font-weight:600;font-size:.92rem;}
-    .rank-detail{font-size:.7rem;color:var(--muted);}
-    .rank-pts{font-family:var(--ff-t);font-size:1.4rem;color:var(--gold);}
-    .empty{text-align:center;color:var(--muted);padding:2rem;font-size:.88rem;}
-    .spinner-wrap{text-align:center;padding:2rem;}
-    .spinner{display:inline-block;width:28px;height:28px;border:3px solid rgba(212,175,55,.2);border-top-color:var(--gold);border-radius:50%;animation:spin .7s linear infinite;}
+    .rank-name{font-family:var(--ff-s);font-weight:600;font-size:.9rem;}
+    .rank-detail{font-size:.68rem;color:var(--muted);}
+    .rank-pts{font-family:var(--ff-t);font-size:1.35rem;color:var(--gold);}
+    .empty{text-align:center;color:var(--muted);padding:2rem;font-size:.86rem;}
+    .spinner-wrap{text-align:center;padding:1.5rem;}
+    .spinner{display:inline-block;width:26px;height:26px;border:3px solid rgba(212,175,55,.2);border-top-color:var(--gold);border-radius:50%;animation:spin .7s linear infinite;}
     @keyframes spin{to{transform:rotate(360deg)}}
-    .back-link{margin-top:2rem;text-align:center;}
-    .back-link a{color:var(--muted);font-size:.82rem;text-decoration:none;}
+    .back-link{margin-top:1.8rem;text-align:center;}
+    .back-link a{color:var(--muted);font-size:.8rem;text-decoration:none;}
     .back-link a:hover{color:var(--gold);}
-    .prize-banner{background:linear-gradient(135deg,rgba(212,175,55,.12),rgba(212,175,55,.04));border:1px solid rgba(212,175,55,.3);border-radius:.75rem;padding:1rem 1.25rem;text-align:center;}
-    .prize-banner .prize-icon{font-size:1.8rem;margin-bottom:.3rem;}
-    .prize-banner p{font-family:var(--ff-s);font-size:.85rem;color:var(--gold);font-weight:600;}
-    .prize-banner small{color:var(--muted);font-size:.75rem;}
   </style>
 </head>
 <body>
@@ -114,26 +117,25 @@
 
 <div class="card">
   <div class="nav-tabs">
-    <button class="nav-tab active" onclick="showTab('token')">🎮 Jugar</button>
-    <button class="nav-tab" onclick="showTab('ranking')">🏆 Ranking</button>
+    <button class="nav-tab active" id="tab-jugar" onclick="showTab('token')">🎮 Jugar</button>
+    <button class="nav-tab" id="tab-rank" onclick="showTab('ranking')">🏆 Ranking</button>
   </div>
 
-  <!-- TOKEN -->
+  <!-- TOKEN: ingreso de código -->
   <div id="screen-token" class="screen active">
     <div class="screen-title">⚽ Ingresa tu código</div>
-    <p class="screen-desc">Solicita tu código único al mesero con cada pedido y demuestra que sabes de fútbol</p>
     <div class="prize-banner">
-      <div class="prize-icon">🏆</div>
+      <div class="pi">🏆</div>
       <p>Premio mensual al mejor del ranking</p>
-      <small>El jugador con más puntos al final de cada mes gana un premio especial en La Tribuna 90</small>
+      <small>El jugador con más puntos acumulados al cierre del mes gana</small>
     </div>
     <div class="field">
-      <label for="input-name">Tu nombre o apodo</label>
-      <input id="input-name" type="text" placeholder="Ej: El Pibe, Ronaldito..." maxlength="30">
-    </div>
-    <div class="field">
-      <label for="input-token">Código del pedido</label>
+      <label>Código del pedido</label>
       <input id="input-token" type="text" placeholder="Ej: TRB-4X9K" maxlength="10" style="text-transform:uppercase;letter-spacing:.12em;">
+    </div>
+    <div class="field">
+      <label>Tu número de teléfono (para identificarte)</label>
+      <input id="input-phone" type="tel" placeholder="Ej: 3001234567" maxlength="15">
     </div>
     <p class="err-msg" id="token-err"></p>
     <button class="btn btn-gold" id="btn-start" onclick="validateToken()">
@@ -141,22 +143,40 @@
     </button>
   </div>
 
+  <!-- REGISTRO: primera vez -->
+  <div id="screen-register" class="screen">
+    <div class="screen-title">📋 Regístrate</div>
+    <p class="screen-desc">Es tu primera vez — completa tu perfil para acumular puntos y aparecer en el ranking</p>
+    <div class="field">
+      <label>Nombre o apodo</label>
+      <input id="reg-name" type="text" placeholder="Ej: El Pibe, Ronaldito..." maxlength="30">
+    </div>
+    <div class="field">
+      <label>Correo electrónico</label>
+      <input id="reg-email" type="email" placeholder="tucorreo@ejemplo.com">
+    </div>
+    <p class="err-msg" id="reg-err"></p>
+    <button class="btn btn-gold" id="btn-register" onclick="registerUser()">
+      <i class="fas fa-user-check"></i> Registrarme y Jugar
+    </button>
+  </div>
+
   <!-- QUIZ -->
   <div id="screen-quiz" class="screen">
     <div class="quiz-header">
-      <div>
+      <div class="q-meta">
         <div class="q-progress" id="q-progress">Pregunta 1 de 10</div>
         <div class="q-cat" id="q-cat">Categoría</div>
       </div>
       <div class="score-wrap">
-        <div class="score-label">Puntaje</div>
+        <div class="score-label">Esta ronda</div>
         <div class="score-val" id="live-score">0</div>
       </div>
     </div>
-    <div class="prog-bar-bg"><div class="prog-bar" id="prog-bar" style="width:0%"></div></div>
+    <div class="prog-bg"><div class="prog-bar" id="prog-bar" style="width:0%"></div></div>
     <div class="timer-row">
       <div class="timer-circle" id="timer">15</div>
-      <span style="color:var(--muted);font-size:.78rem">segundos</span>
+      <span style="color:var(--muted);font-size:.75rem">segundos</span>
     </div>
     <div class="q-text" id="q-text"></div>
     <div class="opts" id="opts"></div>
@@ -167,12 +187,13 @@
   <div id="screen-result" class="screen">
     <div class="result-trophy" id="r-trophy">🏆</div>
     <div class="result-title" id="r-title">¡Eres un crack!</div>
-    <div class="result-score" id="r-score">0 <span>pts</span></div>
+    <div class="result-score" id="r-score">0 <span>pts esta ronda</span></div>
+    <div class="result-total" id="r-total"></div>
     <p class="result-msg" id="r-msg"></p>
     <div class="result-stats">
       <div class="r-stat"><div class="r-stat-val" id="r-correct">0</div><div class="r-stat-label">Correctas</div></div>
       <div class="r-stat"><div class="r-stat-val" id="r-wrong">0</div><div class="r-stat-label">Incorrectas</div></div>
-      <div class="r-stat"><div class="r-stat-val" id="r-time">0s</div><div class="r-stat-label">Tiempo prom.</div></div>
+      <div class="r-stat"><div class="r-stat-val" id="r-time">0s</div><div class="r-stat-label">Prom. tiempo</div></div>
     </div>
     <button class="btn btn-outline" onclick="showTab('ranking')">
       <i class="fas fa-trophy"></i> Ver Ranking del Mes
@@ -182,10 +203,10 @@
   <!-- RANKING -->
   <div id="screen-ranking" class="screen">
     <div class="rank-title">🏆 Ranking del Mes</div>
-    <p class="rank-subtitle">El #1 al cierre del mes gana el premio especial</p>
-    <div class="prize-banner" style="padding:.75rem">
-      <div class="prize-icon" style="font-size:1.4rem;">🎁</div>
-      <p style="font-size:.8rem">Premio mensual · Solo en La Tribuna 90</p>
+    <p class="rank-subtitle">Puntaje acumulado · El #1 gana el premio mensual</p>
+    <div class="prize-banner" style="padding:.7rem">
+      <div class="pi" style="font-size:1.3rem">🎁</div>
+      <p style="font-size:.78rem">Premio especial · Solo en La Tribuna 90</p>
     </div>
     <div id="rank-list" class="rank-list">
       <div class="spinner-wrap"><div class="spinner"></div></div>
@@ -200,27 +221,22 @@
   <a href="index.html"><i class="fas fa-arrow-left"></i> Volver a La Tribuna 90</a>
 </div>
 
-<!-- FIREBASE -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, query, orderBy, limit, getDocs, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, query, orderBy, limit, where, getDocs, serverTimestamp, increment } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-const firebaseConfig = {
-  apiKey: "AIzaSyDpSwCwCwGtm2EXML5HWFrajqfKeZMff48",
-  authDomain: "latribuna90-static-web.firebaseapp.com",
-  databaseURL: "https://latribuna90-static-web-default-rtdb.firebaseio.com",
-  projectId: "latribuna90-static-web",
-  storageBucket: "latribuna90-static-web.firebasestorage.app",
-  messagingSenderId: "961712839386",
-  appId: "1:961712839386:web:94e1a3f6a000c7d9a823e3",
-  measurementId: "G-7D7PFEFH9K"
-};
-
-const app = initializeApp(firebaseConfig);
-const db = getFirestore(app);
+const fb = initializeApp({
+  apiKey:"AIzaSyDpSwCwCwGtm2EXML5HWFrajqfKeZMff48",
+  authDomain:"latribuna90-static-web.firebaseapp.com",
+  projectId:"latribuna90-static-web",
+  storageBucket:"latribuna90-static-web.firebasestorage.app",
+  messagingSenderId:"961712839386",
+  appId:"1:961712839386:web:94e1a3f6a000c7d9a823e3"
+});
+const db = getFirestore(fb);
 
 // ── PREGUNTAS ──────────────────────────────────────────────
-const QUESTIONS = [
+const Q = [
   {q:"¿Cuántos jugadores tiene un equipo de fútbol en el campo?",opts:["9","10","11","12"],ans:2,cat:"Reglas"},
   {q:"¿Cuántos minutos dura un partido oficial de fútbol?",opts:["80 min","90 min","100 min","120 min"],ans:1,cat:"Reglas"},
   {q:"¿Cuántos balones de oro ha ganado Lionel Messi?",opts:["6","7","8","9"],ans:2,cat:"Historia"},
@@ -257,243 +273,242 @@ const QUESTIONS = [
   {q:"¿Qué significa VAR?",opts:["Video Asistente al Referee","Video Árbitro en Red","Verificación Árbitro Remoto","Video Árbitro Revisión"],ans:0,cat:"Reglas"},
   {q:"¿Quién es el máximo goleador histórico de la Champions League?",opts:["Messi","Raúl","Cristiano Ronaldo","Benzema"],ans:2,cat:"Clubes"},
   {q:"¿En qué año se jugó el primer Mundial de Fútbol?",opts:["1926","1930","1934","1938"],ans:1,cat:"Historia"},
-  {q:"¿Cuál es el récord de goles en una sola edición del Mundial?",opts:["171","172","173","174"],ans:2,cat:"Mundiales"},
   {q:"¿Qué equipo colombiano ha ganado más veces la Copa Libertadores?",opts:["Atlético Nacional","Millonarios","América de Cali","Junior"],ans:0,cat:"Colombia"},
   {q:"¿Cuántos goles necesita un jugador para lograr un hat-trick?",opts:["2","3","4","5"],ans:1,cat:"Reglas"},
   {q:"¿Qué país organizó el Mundial 1994?",opts:["México","Brasil","Estados Unidos","Italia"],ans:2,cat:"Mundiales"},
+  {q:"¿Cuántos balones de oro ganó Cristiano Ronaldo?",opts:["4","5","6","7"],ans:1,cat:"Jugadores"},
 ];
 
-const PER_GAME = 10;
-const SECS = 15;
-const PTS_BASE = 100;
-const PTS_BONUS = 5;
+const PER_GAME=10, SECS=15, PTS=100, BONUS=5;
 
 // ── STATE ──────────────────────────────────────────────────
-let S = { token:null, name:null, questions:[], cur:0, score:0, correct:0, wrong:0, totalTime:0, timer:null, secs:SECS, answered:false };
-let currentUser = null;
+let S={token:null,phone:null,player:null,questions:[],cur:0,score:0,correct:0,wrong:0,totalTime:0,timer:null,secs:SECS,answered:false};
 
 // ── TABS ───────────────────────────────────────────────────
-window.showTab = function(tab) {
-  document.querySelectorAll('.nav-tab').forEach((b,i) => b.classList.toggle('active', (tab==='token'&&i===0)||(tab==='ranking'&&i===1)));
-  ['token','quiz','result','ranking'].forEach(s => {
-    const el = document.getElementById('screen-'+s);
-    el.classList.toggle('active', s===tab);
+window.showTab=function(tab){
+  document.querySelectorAll('.nav-tab').forEach(b=>b.classList.remove('active'));
+  document.getElementById(tab==='ranking'?'tab-rank':'tab-jugar').classList.add('active');
+  ['token','register','quiz','result','ranking'].forEach(s=>{
+    document.getElementById('screen-'+s).classList.toggle('active',s===tab);
   });
-  if (tab === 'ranking') loadRanking();
+  if(tab==='ranking') loadRanking();
 };
 
-// ── VALIDATE TOKEN ─────────────────────────────────────────
-window.validateToken = async function() {
-  const name  = document.getElementById('input-name').value.trim();
-  const token = document.getElementById('input-token').value.trim().toUpperCase();
-  const err   = document.getElementById('token-err');
-  const btn   = document.getElementById('btn-start');
-  err.textContent = '';
+// ── STEP 1: VALIDATE TOKEN ─────────────────────────────────
+window.validateToken=async function(){
+  const token=document.getElementById('input-token').value.trim().toUpperCase();
+  const phone=document.getElementById('input-phone').value.trim().replace(/\D/g,'');
+  const err=document.getElementById('token-err');
+  const btn=document.getElementById('btn-start');
+  err.textContent='';
 
-  if (!name)  { err.textContent = 'Por favor ingresa tu nombre o apodo'; return; }
-  if (!token) { err.textContent = 'Por favor ingresa tu código'; return; }
+  if(!token){err.textContent='Ingresa el código del pedido';return;}
+  if(!phone||phone.length<7){err.textContent='Ingresa un número de teléfono válido';return;}
 
-  btn.disabled = true;
-  btn.textContent = 'Verificando...';
-
-  try {
+  btn.disabled=true; btn.textContent='Verificando...';
+  try{
     // Verificar token
-    const tokenDoc = await getDoc(doc(db, 'tokens', token));
-    if (!tokenDoc.exists()) {
-      err.textContent = '❌ Código inválido. Pídele uno nuevo al mesero.';
-      btn.disabled = false; btn.innerHTML = '<i class="fas fa-futbol"></i> ¡Entrar al campo!';
-      return;
+    const tDoc=await getDoc(doc(db,'tokens',token));
+    if(!tDoc.exists()){err.textContent='❌ Código inválido. Pídele uno al mesero.';return;}
+    if(tDoc.data().used){err.textContent='⚠️ Este código ya fue utilizado.';return;}
+
+    // Marcar token usado
+    await updateDoc(doc(db,'tokens',token),{used:true,usedBy:phone,usedAt:serverTimestamp()});
+    S.token=token; S.phone=phone;
+
+    // Buscar jugador existente
+    const pDoc=await getDoc(doc(db,'players',phone));
+    if(pDoc.exists()){
+      S.player=pDoc.data();
+      await prepareQuiz();
+    } else {
+      // Primera vez → registro
+      showScreen('register');
     }
-    const tData = tokenDoc.data();
-    if (tData.used) {
-      err.textContent = '⚠️ Este código ya fue utilizado. Cada código es de un solo uso.';
-      btn.disabled = false; btn.innerHTML = '<i class="fas fa-futbol"></i> ¡Entrar al campo!';
-      return;
-    }
-
-    // Marcar usado
-    await updateDoc(doc(db, 'tokens', token), { used: true, usedBy: name, usedAt: serverTimestamp() });
-
-    // Preguntas ya vistas por este jugador
-    const playerDoc = await getDoc(doc(db, 'players', name.toLowerCase()));
-    const seen = playerDoc.exists() ? (playerDoc.data().seen || []) : [];
-    const available = QUESTIONS.map((_,i)=>i).filter(i=>!seen.includes(i));
-    const pool = available.length >= PER_GAME ? available : QUESTIONS.map((_,i)=>i);
-    const picked = shuffle(pool).slice(0, PER_GAME);
-
-    // Guardar vistas
-    const newSeen = [...new Set([...seen, ...picked])];
-    await setDoc(doc(db, 'players', name.toLowerCase()), { seen: newSeen, name }, { merge: true });
-
-    S = { token, name, questions: picked.map(i=>QUESTIONS[i]), cur:0, score:0, correct:0, wrong:0, totalTime:0, timer:null, secs:SECS, answered:false };
-    currentUser = name;
-    startQuiz();
-  } catch(e) {
-    err.textContent = 'Error de conexión. Intenta de nuevo.';
-    console.error(e);
-  }
-  btn.disabled = false;
-  btn.innerHTML = '<i class="fas fa-futbol"></i> ¡Entrar al campo!';
+  }catch(e){err.textContent='Error de conexión. Intenta de nuevo.';console.error(e);}
+  finally{btn.disabled=false;btn.innerHTML='<i class="fas fa-futbol"></i> ¡Entrar al campo!';}
 };
 
-// ── QUIZ ───────────────────────────────────────────────────
-function startQuiz() {
-  showTab('quiz');
+// ── STEP 2: REGISTER (primera vez) ─────────────────────────
+window.registerUser=async function(){
+  const name=document.getElementById('reg-name').value.trim();
+  const email=document.getElementById('reg-email').value.trim();
+  const err=document.getElementById('reg-err');
+  const btn=document.getElementById('btn-register');
+  err.textContent='';
+
+  if(!name){err.textContent='Ingresa tu nombre o apodo';return;}
+  if(!email||!email.includes('@')){err.textContent='Ingresa un correo válido';return;}
+
+  btn.disabled=true; btn.textContent='Guardando...';
+  const now=new Date();
+  const month=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+  try{
+    const player={name,email,phone:S.phone,totalScore:0,totalGames:0,monthScore:{[month]:0},seen:[],createdAt:serverTimestamp()};
+    await setDoc(doc(db,'players',S.phone),player);
+    S.player=player;
+    await prepareQuiz();
+  }catch(e){err.textContent='Error guardando. Intenta de nuevo.';console.error(e);}
+  finally{btn.disabled=false;btn.innerHTML='<i class="fas fa-user-check"></i> Registrarme y Jugar';}
+};
+
+// ── PREPARE QUIZ ───────────────────────────────────────────
+async function prepareQuiz(){
+  const seen=S.player.seen||[];
+  const available=Q.map((_,i)=>i).filter(i=>!seen.includes(i));
+  const pool=available.length>=PER_GAME?available:Q.map((_,i)=>i);
+  const picked=shuffle(pool).slice(0,PER_GAME);
+  // Actualizar vistas en Firestore
+  const newSeen=[...new Set([...seen,...picked])];
+  await updateDoc(doc(db,'players',S.phone),{seen:newSeen});
+  S.questions=picked.map(i=>Q[i]);
+  S.cur=0;S.score=0;S.correct=0;S.wrong=0;S.totalTime=0;
+  showScreen('quiz');
   showQuestion();
 }
 
-function showQuestion() {
-  const q = S.questions[S.cur];
-  const total = S.questions.length;
-  document.getElementById('q-progress').textContent = `Pregunta ${S.cur+1} de ${total}`;
-  document.getElementById('q-cat').textContent = q.cat;
-  document.getElementById('q-text').textContent = q.q;
-  document.getElementById('live-score').textContent = S.score;
-  document.getElementById('prog-bar').style.width = `${(S.cur/total)*100}%`;
-  document.getElementById('feedback').textContent = '';
-  document.getElementById('feedback').className = 'feedback';
-
-  const opts = document.getElementById('opts');
-  opts.innerHTML = '';
-  ['A','B','C','D'].forEach((l,i) => {
-    const btn = document.createElement('button');
-    btn.className = 'opt';
-    btn.innerHTML = `<span class="opt-letter">${l}</span>${q.opts[i]}`;
-    btn.onclick = () => pick(i);
+// ── QUIZ ───────────────────────────────────────────────────
+function showQuestion(){
+  const q=S.questions[S.cur],total=S.questions.length;
+  document.getElementById('q-progress').textContent=`Pregunta ${S.cur+1} de ${total}`;
+  document.getElementById('q-cat').textContent=q.cat;
+  document.getElementById('q-text').textContent=q.q;
+  document.getElementById('live-score').textContent=S.score;
+  document.getElementById('prog-bar').style.width=`${(S.cur/total)*100}%`;
+  document.getElementById('feedback').textContent='';
+  document.getElementById('feedback').className='feedback';
+  const opts=document.getElementById('opts');
+  opts.innerHTML='';
+  ['A','B','C','D'].forEach((l,i)=>{
+    const btn=document.createElement('button');
+    btn.className='opt';
+    btn.innerHTML=`<span class="opt-letter">${l}</span>${q.opts[i]}`;
+    btn.onclick=()=>pick(i);
     opts.appendChild(btn);
   });
-
-  S.answered = false;
+  S.answered=false;
   startTimer();
 }
 
-function startTimer() {
-  S.secs = SECS;
-  const el = document.getElementById('timer');
-  el.textContent = SECS;
-  el.classList.remove('urgent');
+function startTimer(){
+  S.secs=SECS;
+  const el=document.getElementById('timer');
+  el.textContent=SECS;el.classList.remove('urgent');
   clearInterval(S.timer);
-  S.timer = setInterval(() => {
-    S.secs--;
-    el.textContent = S.secs;
-    if (S.secs <= 5) el.classList.add('urgent');
-    if (S.secs <= 0) { clearInterval(S.timer); if (!S.answered) timeOut(); }
-  }, 1000);
+  S.timer=setInterval(()=>{
+    S.secs--;el.textContent=S.secs;
+    if(S.secs<=5)el.classList.add('urgent');
+    if(S.secs<=0){clearInterval(S.timer);if(!S.answered)timeOut();}
+  },1000);
 }
 
-function timeOut() {
-  S.answered = true; S.wrong++; S.totalTime += SECS;
-  const btns = document.querySelectorAll('.opt');
-  btns.forEach(b => b.disabled = true);
+function timeOut(){
+  S.answered=true;S.wrong++;S.totalTime+=SECS;
+  const btns=document.querySelectorAll('.opt');
+  btns.forEach(b=>b.disabled=true);
   btns[S.questions[S.cur].ans].classList.add('correct');
-  feedback(false, '⏱️ ¡Se acabó el tiempo!');
-  setTimeout(next, 2000);
+  fb_msg(false,'⏱️ ¡Tiempo! La respuesta era otra.');
+  setTimeout(next,2000);
 }
 
-function pick(idx) {
-  if (S.answered) return;
-  S.answered = true;
-  clearInterval(S.timer);
-  const q = S.questions[S.cur];
-  const used = SECS - S.secs;
-  S.totalTime += used;
-  const btns = document.querySelectorAll('.opt');
-  btns.forEach(b => b.disabled = true);
-  if (idx === q.ans) {
+function pick(idx){
+  if(S.answered)return;
+  S.answered=true;clearInterval(S.timer);
+  const q=S.questions[S.cur],used=SECS-S.secs;
+  S.totalTime+=used;
+  const btns=document.querySelectorAll('.opt');
+  btns.forEach(b=>b.disabled=true);
+  if(idx===q.ans){
     btns[idx].classList.add('correct');
-    const bonus = S.secs * PTS_BONUS;
-    const pts = PTS_BASE + bonus;
-    S.score += pts; S.correct++;
-    document.getElementById('live-score').textContent = S.score;
-    feedback(true, `✅ ¡Correcto! +${pts} pts`);
-  } else {
-    btns[idx].classList.add('wrong');
-    btns[q.ans].classList.add('correct');
+    const bonus=S.secs*BONUS,pts=PTS+bonus;
+    S.score+=pts;S.correct++;
+    document.getElementById('live-score').textContent=S.score;
+    fb_msg(true,`✅ ¡Correcto! +${pts} pts`);
+  }else{
+    btns[idx].classList.add('wrong');btns[q.ans].classList.add('correct');
     S.wrong++;
-    feedback(false, `❌ La respuesta era: ${q.opts[q.ans]}`);
+    fb_msg(false,`❌ Era: ${q.opts[q.ans]}`);
   }
-  setTimeout(next, 2200);
+  setTimeout(next,2200);
 }
 
-function feedback(ok, msg) {
-  const el = document.getElementById('feedback');
-  el.textContent = msg;
-  el.className = `feedback ${ok?'correct':'wrong'}`;
+function fb_msg(ok,msg){
+  const el=document.getElementById('feedback');
+  el.textContent=msg;el.className=`feedback ${ok?'correct':'wrong'}`;
 }
 
-function next() {
-  S.cur++;
-  if (S.cur >= S.questions.length) endQuiz(); else showQuestion();
-}
+function next(){S.cur++;if(S.cur>=S.questions.length)endQuiz();else showQuestion();}
 
-// ── END ────────────────────────────────────────────────────
-async function endQuiz() {
+// ── END QUIZ ───────────────────────────────────────────────
+async function endQuiz(){
   clearInterval(S.timer);
-  const avg = Math.round(S.totalTime / S.questions.length);
-  const now = new Date();
-  const month = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+  const avg=Math.round(S.totalTime/S.questions.length);
+  const now=new Date();
+  const month=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
 
-  // Guardar en ranking del mes
-  const rankId = `${month}_${S.name.toLowerCase().replace(/\s+/g,'-')}_${Date.now()}`;
-  await setDoc(doc(db, 'ranking', rankId), {
-    name: S.name, score: S.score, correct: S.correct, wrong: S.wrong,
-    avgTime: avg, month, date: now.toLocaleDateString('es-CO'), ts: serverTimestamp()
+  // Acumular puntos en el perfil del jugador
+  const monthKey=`monthScore.${month}`;
+  await updateDoc(doc(db,'players',S.phone),{
+    totalScore:increment(S.score),
+    totalGames:increment(1),
+    lastPlayed:serverTimestamp(),
+    [monthKey]:increment(S.score)
   });
 
-  // Resultado
-  const pct = (S.correct / S.questions.length) * 100;
-  let trophy='⚽', title='¡Sigue entrenando!', msg='No te desanimes, la próxima vez lo harás mejor.';
-  if (pct>=90){trophy='🏆';title='¡Eres un crack total!';msg='Impresionante. Muéstrale tu puntaje al mesero, ¡podrías ganar el premio del mes!';}
+  // Refrescar datos del jugador
+  const fresh=(await getDoc(doc(db,'players',S.phone))).data();
+  const monthTotal=fresh.monthScore?.[month]||S.score;
+
+  // Resultado pantalla
+  const pct=(S.correct/S.questions.length)*100;
+  let trophy='⚽',title='¡Sigue entrenando!',msg='No te desanimes, la próxima vez lo harás mejor.';
+  if(pct>=90){trophy='🏆';title='¡Eres un crack total!';msg='Impresionante. ¡Muéstrale tu puntaje al mesero, puedes ganar el premio del mes!';}
   else if(pct>=70){trophy='⭐';title='¡Gran partido!';msg='Muy buen resultado. Estás en la pelea por el premio mensual.';}
-  else if(pct>=50){trophy='🎯';title='¡Buen intento!';msg='Pasaste la mitad. Un poco más de repaso y llegas al top.';}
+  else if(pct>=50){trophy='🎯';title='¡Buen intento!';msg='Pasaste la mitad. Un poco más y llegas al top del ranking.';}
 
-  document.getElementById('r-trophy').textContent = trophy;
-  document.getElementById('r-title').textContent = title;
-  document.getElementById('r-score').innerHTML = `${S.score} <span>pts</span>`;
-  document.getElementById('r-msg').textContent = msg;
-  document.getElementById('r-correct').textContent = S.correct;
-  document.getElementById('r-wrong').textContent = S.wrong;
-  document.getElementById('r-time').textContent = `${avg}s`;
+  document.getElementById('r-trophy').textContent=trophy;
+  document.getElementById('r-title').textContent=title;
+  document.getElementById('r-score').innerHTML=`${S.score} <span>pts esta ronda</span>`;
+  document.getElementById('r-total').innerHTML=`Total acumulado este mes: <strong>${monthTotal} pts</strong>`;
+  document.getElementById('r-msg').textContent=msg;
+  document.getElementById('r-correct').textContent=S.correct;
+  document.getElementById('r-wrong').textContent=S.wrong;
+  document.getElementById('r-time').textContent=`${avg}s`;
 
-  showTab('result');
+  showScreen('result');
 }
 
 // ── RANKING ────────────────────────────────────────────────
-async function loadRanking() {
-  const el = document.getElementById('rank-list');
-  el.innerHTML = '<div class="spinner-wrap"><div class="spinner"></div></div>';
-
-  const now = new Date();
-  const month = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
-
-  try {
-    const q = query(collection(db,'ranking'), orderBy('score','desc'), limit(20));
-    const snap = await getDocs(q);
-    const all = [];
-    snap.forEach(d => { const data = d.data(); if(data.month===month) all.push(data); });
-    // Si no hay del mes actual mostramos todos
-    const items = all.length ? all : snap.docs.map(d=>d.data());
-
-    if (!items.length) { el.innerHTML = '<div class="empty">🏟️ Aún no hay partidas este mes.<br>¡Sé el primero en jugar!</div>'; return; }
-
-    const medals = ['🥇','🥈','🥉'];
-    el.innerHTML = items.slice(0,20).map((r,i) => `
-      <div class="rank-item ${currentUser && r.name===currentUser?'me':''}">
+async function loadRanking(){
+  const el=document.getElementById('rank-list');
+  el.innerHTML='<div class="spinner-wrap"><div class="spinner"></div></div>';
+  const now=new Date();
+  const month=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+  const monthKey=`monthScore.${month}`;
+  try{
+    const snap=await getDocs(query(collection(db,'players'),orderBy(monthKey,'desc'),limit(20)));
+    const items=[];
+    snap.forEach(d=>{const data=d.data();const ms=data.monthScore?.[month]||0;if(ms>0)items.push({...data,ms});});
+    if(!items.length){el.innerHTML='<div class="empty">🏟️ Aún no hay partidas este mes.<br>¡Sé el primero en jugar!</div>';return;}
+    const medals=['🥇','🥈','🥉'];
+    el.innerHTML=items.map((r,i)=>`
+      <div class="rank-item ${S.phone&&r.phone===S.phone?'me':''}">
         <div class="rank-pos">${medals[i]||i+1}</div>
         <div class="rank-info">
-          <div class="rank-name">${r.name}${currentUser&&r.name===currentUser?' (tú)':''}</div>
-          <div class="rank-detail">${r.correct}/${r.correct+r.wrong} correctas · prom. ${r.avgTime}s · ${r.date}</div>
+          <div class="rank-name">${r.name}${S.phone&&r.phone===S.phone?' (tú)':''}</div>
+          <div class="rank-detail">${r.totalGames} partidas jugadas en total</div>
         </div>
-        <div class="rank-pts">${r.score}</div>
-      </div>
-    `).join('');
-  } catch(e) {
-    el.innerHTML = '<div class="empty">Error cargando ranking. Intenta de nuevo.</div>';
-    console.error(e);
-  }
+        <div class="rank-pts">${r.ms}</div>
+      </div>`).join('');
+  }catch(e){el.innerHTML='<div class="empty">Error cargando ranking.</div>';console.error(e);}
 }
 
 // ── UTILS ──────────────────────────────────────────────────
+function showScreen(s){
+  ['token','register','quiz','result','ranking'].forEach(id=>{
+    document.getElementById('screen-'+id).classList.toggle('active',id===s);
+  });
+}
 function shuffle(a){const b=[...a];for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]];}return b;}
 </script>
 </body>

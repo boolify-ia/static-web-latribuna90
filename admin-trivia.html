@@ -133,6 +133,16 @@
     <div id="rank-list"><div class="spinner-wrap"><div class="spinner"></div></div></div>
   </div>
 
+  <!-- JUGADORES / CONTACTOS -->
+  <div class="card">
+    <div class="card-header">
+      <h2>👥 Base de Jugadores</h2>
+      <button class="btn btn-outline btn-sm" onclick="loadPlayers()"><i class="fas fa-sync"></i> Refrescar</button>
+    </div>
+    <p style="color:var(--muted);font-size:.78rem;margin-bottom:.9rem">Todos los jugadores registrados con sus datos de contacto</p>
+    <div id="players-list"><div class="spinner-wrap"><div class="spinner"></div></div></div>
+  </div>
+
   <div style="display:flex;gap:.75rem;flex-wrap:wrap;justify-content:center">
     <a href="trivia.html" target="_blank" class="btn btn-outline"><i class="fas fa-external-link-alt"></i> Ver Trivia</a>
     <a href="index.html" class="btn btn-outline"><i class="fas fa-home"></i> Ir al Sitio</a>
@@ -143,7 +153,7 @@
 
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getFirestore, doc, getDoc, setDoc, getDocs, deleteDoc, collection, query, orderBy, limit, where, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getFirestore, doc, getDoc, setDoc, getDocs, deleteDoc, updateDoc, collection, query, orderBy, limit, where, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 const firebaseConfig = {
   apiKey: "AIzaSyDpSwCwCwGtm2EXML5HWFrajqfKeZMff48",
@@ -177,21 +187,22 @@ window.login = function() {
 };
 window.logout = function(){ location.reload(); };
 
-async function loadAll(){ await Promise.all([loadStats(),loadTokens(),loadRanking()]); }
+async function loadAll(){ await Promise.all([loadStats(),loadTokens(),loadRanking(),loadPlayers()]); }
 
 // ── STATS ──────────────────────────────────────────────────
 async function loadStats() {
   const now = new Date();
   const month = `${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
-  const [tSnap, rSnap] = await Promise.all([
+  const [tSnap, pSnap] = await Promise.all([
     getDocs(collection(db,'tokens')),
-    getDocs(query(collection(db,'ranking'), where('month','==',month)))
+    getDocs(collection(db,'players'))
   ]);
-  let total=0, used=0;
+  let total=0, used=0, thisMonth=0;
   tSnap.forEach(d=>{ total++; if(d.data().used) used++; });
+  pSnap.forEach(d=>{ const ms=d.data().monthScore?.[month]||0; if(ms>0) thisMonth++; });
   document.getElementById('s-tokens').textContent = total;
   document.getElementById('s-used').textContent = used;
-  document.getElementById('s-players').textContent = rSnap.size;
+  document.getElementById('s-players').textContent = thisMonth;
 }
 
 // ── TOKENS ─────────────────────────────────────────────────
@@ -275,30 +286,62 @@ async function loadRanking(){
   el.innerHTML='<div class="spinner-wrap"><div class="spinner"></div></div>';
   const now=new Date();
   const month=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
-  const snap=await getDocs(query(collection(db,'ranking'),where('month','==',month),orderBy('score','desc'),limit(30)));
-  if(!snap.size){el.innerHTML='<div class="empty">No hay partidas registradas este mes</div>';return;}
-  const medals=['🥇','🥈','🥉'];
-  const items=[];snap.forEach(d=>items.push(d.data()));
-  el.innerHTML=items.map((r,i)=>`
-    <div class="rank-item">
-      <div class="rank-pos">${medals[i]||i+1}</div>
-      <div class="rank-info"><div class="rank-name">${r.name}</div><div class="rank-detail">${r.correct}/${r.correct+r.wrong} correctas · prom. ${r.avgTime}s · ${r.date}</div></div>
-      <div class="rank-score">${r.score} pts</div>
-    </div>`).join('');
+  const monthKey=`monthScore.${month}`;
+  try{
+    const snap=await getDocs(query(collection(db,'players'),orderBy(monthKey,'desc'),limit(30)));
+    const items=[];
+    snap.forEach(d=>{const data=d.data();const ms=data.monthScore?.[month]||0;if(ms>0)items.push({...data,ms});});
+    if(!items.length){el.innerHTML='<div class="empty">No hay partidas este mes</div>';return;}
+    const medals=['🥇','🥈','🥉'];
+    el.innerHTML=items.map((r,i)=>`
+      <div class="rank-item">
+        <div class="rank-pos">${medals[i]||i+1}</div>
+        <div class="rank-info">
+          <div class="rank-name">${r.name}</div>
+          <div class="rank-detail">📱 ${r.phone} · ✉️ ${r.email||'—'} · ${r.totalGames||0} partidas · total ${r.totalScore||0} pts</div>
+        </div>
+        <div class="rank-score">${r.ms} pts</div>
+      </div>`).join('');
+  }catch(e){el.innerHTML='<div class="empty">Error cargando ranking.</div>';console.error(e);}
+}
+
+// ── PLAYERS (base de datos de contactos) ───────────────────
+async function loadPlayers(){
+  const el=document.getElementById('players-list');
+  if(!el) return;
+  el.innerHTML='<div class="spinner-wrap"><div class="spinner"></div></div>';
+  try{
+    const snap=await getDocs(query(collection(db,'players'),orderBy('totalScore','desc'),limit(100)));
+    if(!snap.size){el.innerHTML='<div class="empty">No hay jugadores registrados aún</div>';return;}
+    const rows=[];
+    snap.forEach(d=>{
+      const r=d.data();
+      rows.push(`<tr>
+        <td>${r.name||'—'}</td>
+        <td>${r.phone||'—'}</td>
+        <td>${r.email||'—'}</td>
+        <td style="text-align:center">${r.totalGames||0}</td>
+        <td style="text-align:center;color:var(--gold);font-family:var(--ff-t);font-size:1rem">${r.totalScore||0}</td>
+      </tr>`);
+    });
+    el.innerHTML=`<table><thead><tr><th>Nombre</th><th>Teléfono</th><th>Correo</th><th style="text-align:center">Partidas</th><th style="text-align:center">Pts Total</th></tr></thead><tbody>${rows.join('')}</tbody></table>`;
+  }catch(e){el.innerHTML='<div class="empty">Error cargando jugadores.</div>';console.error(e);}
 }
 
 window.clearMonthRanking=async function(){
-  if(!confirm('¿Cerrar el mes y limpiar el ranking? Guarda el ganador antes.'))return;
+  if(!confirm('¿Cerrar el mes? Esto resetea el puntaje mensual de todos los jugadores.'))return;
   const now=new Date();
   const month=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
-  const snap=await getDocs(query(collection(db,'ranking'),where('month','==',month)));
-  const dels=[];snap.forEach(d=>dels.push(deleteDoc(doc(db,'ranking',d.id))));
-  await Promise.all(dels);
+  const snap=await getDocs(collection(db,'players'));
+  const ups=[];
+  snap.forEach(d=>{ ups.push(updateDoc(doc(db,'players',d.id),{[`monthScore.${month}`]:0})); });
+  await Promise.all(ups);
   loadRanking();loadStats();
 };
 
 window.loadTokens=loadTokens;
 window.loadRanking=loadRanking;
+window.loadPlayers=loadPlayers;
 </script>
 </body>
 </html>
