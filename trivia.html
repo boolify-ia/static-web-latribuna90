@@ -332,19 +332,33 @@ window.validateToken=async function(){
 // ── STEP 2: REGISTER (primera vez) ─────────────────────────
 window.registerUser=async function(){
   const name=document.getElementById('reg-name').value.trim();
-  const email=document.getElementById('reg-email').value.trim();
+  const email=document.getElementById('reg-email').value.trim().toLowerCase();
   const err=document.getElementById('reg-err');
   const btn=document.getElementById('btn-register');
   err.textContent='';
 
+  // Validar nombre
   if(!name){err.textContent='Ingresa tu nombre o apodo';return;}
-  if(!email||!email.includes('@')){err.textContent='Ingresa un correo válido';return;}
 
-  btn.disabled=true; btn.textContent='Guardando...';
-  const now=new Date();
-  const month=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+  // Validar correo con regex
+  const emailRegex=/^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+  if(!email){err.textContent='Ingresa tu correo electrónico';return;}
+  if(!emailRegex.test(email)){err.textContent='❌ El correo no tiene un formato válido (ej: tucorreo@gmail.com)';return;}
+
+  btn.disabled=true; btn.textContent='Verificando...';
   try{
-    const player={name,email,phone:S.phone,totalScore:0,totalGames:0,monthScore:{[month]:0},seen:[],createdAt:serverTimestamp()};
+    // Verificar que el nombre no esté en uso
+    const nameSnap=await getDocs(query(collection(db,'players'),where('nameLower','==',name.toLowerCase()),limit(1)));
+    if(!nameSnap.empty){
+      err.textContent=`❌ El nombre "${name}" ya está en uso. Elige otro apodo.`;
+      btn.disabled=false;btn.innerHTML='<i class="fas fa-user-check"></i> Registrarme y Jugar';
+      return;
+    }
+
+    btn.textContent='Guardando...';
+    const now=new Date();
+    const month=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
+    const player={name,nameLower:name.toLowerCase(),email,phone:S.phone,totalScore:0,totalGames:0,monthScore:{[month]:0},seen:[],createdAt:serverTimestamp()};
     await setDoc(doc(db,'players',S.phone),player);
     S.player=player;
     await prepareQuiz();
