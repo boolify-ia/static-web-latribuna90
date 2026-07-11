@@ -312,8 +312,7 @@ window.validateToken=async function(){
     if(!tDoc.exists()){err.textContent='❌ Código inválido. Pídele uno al mesero.';return;}
     if(tDoc.data().used){err.textContent='⚠️ Este código ya fue utilizado.';return;}
 
-    // Marcar token usado
-    await updateDoc(doc(db,'tokens',token),{used:true,usedBy:phone,usedAt:serverTimestamp()});
+    // Token válido — se marcará como usado al finalizar la trivia
     S.token=token; S.phone=phone;
 
     // Buscar jugador existente
@@ -460,7 +459,8 @@ async function endQuiz(){
   const now=new Date();
   const month=`${now.getFullYear()}-${String(now.getMonth()+1).padStart(2,'0')}`;
 
-  // Acumular puntos en el perfil del jugador
+  // Marcar token como usado ahora que terminó la trivia completa
+  await updateDoc(doc(db,'tokens',S.token),{used:true,usedBy:S.phone,usedAt:serverTimestamp()});
   const monthKey=`monthScore.${month}`;
   await updateDoc(doc(db,'players',S.phone),{
     totalScore:increment(S.score),
