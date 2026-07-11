@@ -371,9 +371,8 @@ async function prepareQuiz(){
   const available=Q.map((_,i)=>i).filter(i=>!seen.includes(i));
   const pool=available.length>=PER_GAME?available:Q.map((_,i)=>i);
   const picked=shuffle(pool).slice(0,PER_GAME);
-  // Actualizar vistas en Firestore
-  const newSeen=[...new Set([...seen,...picked])];
-  await updateDoc(doc(db,'players',S.phone),{seen:newSeen});
+  // Guardamos los índices en el state — se escriben en Firestore solo al terminar
+  S.pickedIndices=picked;
   S.questions=picked.map(i=>Q[i]);
   S.cur=0;S.score=0;S.correct=0;S.wrong=0;S.totalTime=0;
   showScreen('quiz');
@@ -461,11 +460,17 @@ async function endQuiz(){
 
   // Marcar token como usado ahora que terminó la trivia completa
   await updateDoc(doc(db,'tokens',S.token),{used:true,usedBy:S.phone,usedAt:serverTimestamp()});
+
+  // Actualizar preguntas vistas — solo al terminar para no perderlas si cierra antes
+  const seen=S.player.seen||[];
+  const newSeen=[...new Set([...seen,...S.pickedIndices])];
+
   const monthKey=`monthScore.${month}`;
   await updateDoc(doc(db,'players',S.phone),{
     totalScore:increment(S.score),
     totalGames:increment(1),
     lastPlayed:serverTimestamp(),
+    seen:newSeen,
     [monthKey]:increment(S.score)
   });
 
