@@ -294,32 +294,30 @@ window.login = function(){
 
 // ── FORMATO OPTIONS ────────────────────────────────────────
 window.updateFormatoOptions = function(){
-  const f = document.getElementById('t-formato').value;
-  const el = document.getElementById('formato-opts');
-  if(f==='grupos'){
-    el.innerHTML = `
-      <div class="field"><label>Jugadores por grupo</label><input id="t-porgrupo" type="number" value="4" min="3" max="6"></div>
-      <div class="field"><label>Clasificados por grupo</label><input id="t-clasif" type="number" value="2" min="1" max="4"></div>`;
-  } else {
-    el.innerHTML = '';
-  }
+  document.getElementById('formato-opts').innerHTML = '';
 };
 
 // ── CREAR TORNEO ───────────────────────────────────────────
 window.crearTorneo = async function(){
   const nombre = document.getElementById('t-nombre').value.trim();
   const formato = document.getElementById('t-formato').value;
+  const nEsperados = parseInt(document.getElementById('t-njugadores').value) || 0;
   const msg = document.getElementById('create-msg');
   if(!nombre){ showMsg(msg,'err','Ingresa un nombre para el torneo'); return; }
-  const data = { nombre, formato, estado:'pendiente', jugadores:[], partidos:[], createdAt:serverTimestamp() };
+  const data = { nombre, formato, estado:'pendiente', jugadores:[], partidos:[], nEsperados, createdAt:serverTimestamp() };
   if(formato==='grupos'){
-    data.porGrupo = parseInt(document.getElementById('t-porgrupo')?.value||4);
-    data.clasificadosPorGrupo = parseInt(document.getElementById('t-clasif')?.value||2);
+    // Calcular automáticamente: grupos de 4 si n<=16, de 3 si n<=9, de 4-5 si más
+    const n = nEsperados || 8;
+    const pg = n <= 9 ? 3 : 4;
+    data.porGrupo = pg;
+    data.clasificadosPorGrupo = 2;
   }
   try{
     const ref = await addDoc(collection(db,'torneos'), data);
-    showMsg(msg,'ok',`✅ Torneo creado`);
+    showMsg(msg,'ok','✅ Torneo creado');
     document.getElementById('t-nombre').value='';
+    document.getElementById('t-njugadores').value='';
+    document.getElementById('rec-box').style.display='none';
     loadTorneos();
     openMgmt(ref.id, {...data, id:ref.id});
   }catch(e){ showMsg(msg,'err','Error creando torneo'); console.error(e); }
@@ -445,16 +443,20 @@ window.generarFixture = async function(){
 
   let partidos=[], bracket=null, grupos=null;
   const shuffled = shuffle([...js]);
+  const n = js.length;
 
   if(t.formato==='eliminacion'){
     const r = generarEliminacion(shuffled);
-    bracket = r.bracket;
-    partidos = r.partidos;
+    bracket = r.bracket; partidos = r.partidos;
   } else if(t.formato==='grupos'){
-    const pg = t.porGrupo||4;
-    const gruposArr = crearGrupos(shuffled, pg);
+    // Calcular tamaño óptimo de grupos automáticamente
+    const { gruposArr, pg, clasif } = calcGruposOptimos(shuffled);
     grupos = gruposArr.map(g=>g.map(j=>j.id));
     partidos = generarPartidosGrupos(gruposArr);
+    // Guardar configuración calculada
+    await updateDoc(doc(db,'torneos',t.id),{ porGrupo: pg, clasificadosPorGrupo: 2 });
+    torneoActual.porGrupo = pg;
+    torneoActual.clasificadosPorGrupo = 2;
   } else if(t.formato==='liga'){
     partidos = generarLiga(shuffled);
   }
@@ -462,10 +464,35 @@ window.generarFixture = async function(){
   await updateDoc(doc(db,'torneos',t.id),{
     partidos, ...(bracket?{bracket}:{}), ...(grupos?{grupos}:{})
   });
-  torneoActual = {...t, partidos, bracket, grupos};
+  torneoActual = {...torneoActual, partidos, bracket, grupos};
   loadPartidos();
   showMsg(msg,'ok',`✅ Fixture generado: ${partidos.length} partidos`);
 };
+
+function calcGruposOptimos(js){
+  const n = js.length;
+  // Reglas: grupos de 3 o 4, intentar que queden uniformes
+  // y que el número de clasificados sea potencia de 2
+  let mejorPg = 4, mejorScore = -1;
+  for(let pg=3; pg<=5; pg++){
+    const nG = Math.ceil(n/pg);
+    const clasif = nG * 2;
+    // clasif debe ser potencia de 2 o al menos manejable
+    let p=1; while(p<clasif) p*=2;
+    // Penalizar si hay grupos muy desiguales
+    const resto = n % nG;
+    const desigualdad = resto === 0 ? 0 : 1;
+    const score = 10 - desigualdad - Math.abs(pg - 4);
+    if(score > mejorScore){ mejorScore=score; mejorPg=pg; }
+  }
+  const nGrupos = Math.ceil(n/mejorPg);
+  const gruposArr = [];
+  const shuffled = [...js];
+  // Distribuir en serpentina para equilibrar nivel
+  for(let i=0; i<nGrupos; i++) gruposArr.push([]);
+  shuffled.forEach((j,i)=>{ gruposArr[i%nGrupos].push(j); });
+  return { gruposArr, pg: mejorPg, clasif: nGrupos*2 };
+}
 
 function generarEliminacion(js){
   // Rellenar con BYE si no es potencia de 2
