@@ -462,7 +462,7 @@ window.generarFixture = async function(){
   }
 
   await updateDoc(doc(db,'torneos',t.id),{
-    partidos, ...(bracket?{bracket}:{}), ...(grupos?{grupos}:{})
+    partidos, ...(bracket?{bracket: bracketToFirestore(bracket)}:{}), ...(grupos?{grupos}:{})
   });
   torneoActual = {...torneoActual, partidos, bracket, grupos};
   loadPartidos();
@@ -492,6 +492,19 @@ function calcGruposOptimos(js){
   for(let i=0; i<nGrupos; i++) gruposArr.push([]);
   shuffled.forEach((j,i)=>{ gruposArr[i%nGrupos].push(j); });
   return { gruposArr, pg: mejorPg, clasif: nGrupos*2 };
+}
+
+function bracketToFirestore(bracket){
+  // Convierte [[m1,m2],[m3]] → {r0:[m1,m2], r1:[m3]}
+  const obj = {};
+  bracket.forEach((ronda,i) => { obj[`r${i}`] = ronda; });
+  return obj;
+}
+function bracketFromFirestore(obj){
+  // Convierte {r0:[m1,m2], r1:[m3]} → [[m1,m2],[m3]]
+  if(!obj) return null;
+  if(Array.isArray(obj)) return obj; // ya es array (compatibilidad)
+  return Object.keys(obj).sort((a,b)=>parseInt(a.slice(1))-parseInt(b.slice(1))).map(k=>obj[k]);
 }
 
 function generarEliminacion(js){
@@ -606,11 +619,11 @@ window.guardarResultado = async function(pid){
     return {...p, score1:s1, score2:s2, ganador};
   });
   // Si es eliminación, avanzar ganador
-  let bracket = t.bracket;
+  let bracket = bracketFromFirestore(torneoActual?.bracket);
   if(t.formato==='eliminacion' && bracket){
     bracket = avanzarBracket(bracket, partidos);
   }
-  await updateDoc(doc(db,'torneos',t.id),{partidos,...(bracket?{bracket}:{})});
+  await updateDoc(doc(db,'torneos',t.id),{partidos,...(bracket?{bracket: bracketToFirestore(bracket)}:{})});
   torneoActual = {...t, partidos, bracket};
   loadPartidos();
 };

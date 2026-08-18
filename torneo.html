@@ -236,9 +236,15 @@ function buildTabs(t){
   return tabs;
 }
 
+function bracketFromFirestore(obj){
+  if(!obj) return null;
+  if(Array.isArray(obj)) return obj;
+  return Object.keys(obj).sort((a,b)=>parseInt(a.slice(1))-parseInt(b.slice(1))).map(k=>obj[k]);
+}
+
 // ── BRACKET ────────────────────────────────────────────────
 function renderBracket(t){
-  const rondas = t.bracket;
+  const rondas = bracketFromFirestore(t.bracket);
   if(!rondas||!rondas.length) return '<div class="empty">El bracket aún no ha sido generado</div>';
   const nombres = {1:'Final',2:'Semifinales',4:'Cuartos',8:'Octavos',16:'Dieciseisavos'};
   let html = '<div class="bracket-wrap"><div class="bracket">';
