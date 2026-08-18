@@ -1,0 +1,557 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Torneo — La Tribuna 90</title>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Oswald:wght@400;600;700&family=Lato:wght@400;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+  <style>
+    :root{--brown:#36130E;--bd:#1a0a08;--green:#314B36;--gold:#D4AF37;--red:#C5452E;--cream:#F5F0E8;--muted:rgba(245,240,232,0.6);--T:'Bebas Neue',sans-serif;--S:'Oswald',sans-serif;--B:'Lato',sans-serif;}
+    *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+    body{font-family:var(--B);background:var(--bd);color:var(--cream);min-height:100vh;padding:0 0 4rem;}
+    /* LOGIN */
+    #login{display:flex;flex-direction:column;gap:1rem;max-width:320px;margin:5rem auto;align-items:center;padding:2rem;}
+    #login h2{font-family:var(--S);color:var(--gold);font-size:1.3rem;text-align:center;}
+    /* HEADER */
+    .topbar{background:rgba(26,10,8,.95);border-bottom:1px solid rgba(212,175,55,.2);padding:.9rem 2rem;display:flex;align-items:center;gap:1rem;position:sticky;top:0;z-index:100;}
+    .topbar img{height:32px;}
+    .topbar span{font-family:var(--T);font-size:1.3rem;color:var(--gold);letter-spacing:.06em;}
+    .topbar .links{margin-left:auto;display:flex;gap:.75rem;}
+    .topbar a,.topbar button.nav-btn{color:var(--muted);font-family:var(--S);font-size:.75rem;text-decoration:none;letter-spacing:.06em;background:none;border:none;cursor:pointer;padding:.3rem .6rem;border-radius:.4rem;transition:all .2s;}
+    .topbar a:hover,.topbar button.nav-btn:hover{color:var(--gold);background:rgba(212,175,55,.1);}
+    /* MAIN */
+    .main{max-width:900px;margin:0 auto;padding:2rem 1.5rem;display:flex;flex-direction:column;gap:1.5rem;}
+    /* CARD */
+    .card{background:rgba(54,19,14,.6);border:1px solid rgba(212,175,55,.22);border-radius:1rem;padding:1.5rem;}
+    .card-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:1.1rem;flex-wrap:wrap;gap:.5rem;}
+    .card-header h2{font-family:var(--S);font-size:1rem;font-weight:700;text-transform:uppercase;letter-spacing:.08em;color:var(--gold);margin:0;}
+    /* INPUTS */
+    input[type=text],input[type=password],input[type=number],input[type=url],select,textarea{background:rgba(255,255,255,.06);border:1px solid rgba(212,175,55,.3);border-radius:.6rem;padding:.7rem .9rem;color:var(--cream);font-family:var(--B);font-size:.9rem;outline:none;width:100%;}
+    input:focus,select:focus,textarea:focus{border-color:var(--gold);}
+    select option{background:var(--brown);color:var(--cream);}
+    label{font-family:var(--S);font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:.3rem;}
+    .field{display:flex;flex-direction:column;gap:.3rem;}
+    .row{display:grid;grid-template-columns:1fr 1fr;gap:.75rem;}
+    .row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:.75rem;}
+    /* BUTTONS */
+    .btn{display:inline-flex;align-items:center;justify-content:center;gap:.4rem;font-family:var(--S);font-weight:600;font-size:.85rem;letter-spacing:.06em;text-transform:uppercase;padding:.65rem 1.1rem;border-radius:.6rem;border:none;cursor:pointer;transition:all .2s;}
+    .btn-gold{background:linear-gradient(135deg,var(--gold),#b8960c);color:var(--brown);}
+    .btn-gold:hover{filter:brightness(1.1);}
+    .btn-green{background:var(--green);color:var(--cream);}
+    .btn-green:hover{background:#3d5e43;}
+    .btn-red{background:var(--red);color:#fff;}
+    .btn-red:hover{background:#a33824;}
+    .btn-outline{background:transparent;border:1px solid var(--gold);color:var(--gold);}
+    .btn-outline:hover{background:rgba(212,175,55,.1);}
+    .btn-sm{padding:.35rem .75rem;font-size:.72rem;}
+    .btn-xs{padding:.25rem .5rem;font-size:.65rem;}
+    .btn:disabled{opacity:.4;cursor:not-allowed;}
+    /* JUGADORES LIST */
+    .jugador-row{display:flex;align-items:center;gap:.75rem;padding:.6rem .75rem;background:rgba(255,255,255,.04);border-radius:.5rem;margin-bottom:.4rem;}
+    .j-avatar{width:36px;height:36px;border-radius:50%;background:rgba(212,175,55,.15);border:1px solid rgba(212,175,55,.3);display:flex;align-items:center;justify-content:center;font-family:var(--T);font-size:1rem;color:var(--gold);flex-shrink:0;overflow:hidden;}
+    .j-avatar img{width:100%;height:100%;object-fit:cover;}
+    .j-name{flex:1;font-family:var(--S);font-weight:600;}
+    .j-seed{font-size:.72rem;color:var(--muted);}
+    /* PARTIDOS */
+    .partido-row{display:flex;align-items:center;gap:.6rem;padding:.6rem .8rem;background:rgba(255,255,255,.04);border-radius:.5rem;margin-bottom:.4rem;flex-wrap:wrap;}
+    .partido-row .names{flex:1;font-family:var(--S);font-size:.85rem;min-width:150px;}
+    .score-input{width:50px;text-align:center;padding:.4rem;font-family:var(--T);font-size:1.1rem;}
+    .vs{color:var(--muted);font-size:.75rem;padding:0 .2rem;}
+    /* TORNEOS LIST */
+    .torneo-row{display:flex;align-items:center;gap:.75rem;padding:.65rem .75rem;background:rgba(255,255,255,.04);border-radius:.6rem;margin-bottom:.4rem;}
+    .torneo-row .tname{flex:1;font-family:var(--S);font-weight:600;font-size:.9rem;}
+    .torneo-row .tstate{font-size:.72rem;color:var(--muted);}
+    .badge{display:inline-block;padding:.15rem .6rem;border-radius:2rem;font-size:.68rem;font-family:var(--S);font-weight:600;text-transform:uppercase;}
+    .badge-green{background:rgba(49,75,54,.5);color:#81c784;border:1px solid rgba(129,199,132,.3);}
+    .badge-gold{background:rgba(212,175,55,.15);color:var(--gold);border:1px solid rgba(212,175,55,.3);}
+    .badge-gray{background:rgba(255,255,255,.08);color:var(--muted);border:1px solid rgba(255,255,255,.15);}
+    .spinner-wrap{text-align:center;padding:1.5rem;}
+    .spinner{display:inline-block;width:22px;height:22px;border:2px solid rgba(212,175,55,.2);border-top-color:var(--gold);border-radius:50%;animation:spin .7s linear infinite;}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .msg{padding:.5rem .8rem;border-radius:.5rem;font-size:.82rem;text-align:center;}
+    .msg.ok{background:rgba(49,75,54,.4);color:#81c784;}
+    .msg.err{background:rgba(197,69,46,.25);color:#ef9a9a;}
+    hr.gold{border:none;border-top:1px solid rgba(212,175,55,.2);margin:.75rem 0;}
+  </style>
+</head>
+<body>
+
+<!-- LOGIN -->
+<div id="login">
+  <div style="font-size:2.5rem">🎮</div>
+  <h2>Admin Torneos<br>La Tribuna 90</h2>
+  <div class="field"><label>Contraseña</label><input type="password" id="pass" onkeydown="if(event.key==='Enter')login()"></div>
+  <button class="btn btn-gold" onclick="login()" style="width:100%"><i class="fas fa-lock-open"></i> Entrar</button>
+  <p id="login-err" style="color:var(--red);font-size:.82rem;text-align:center;min-height:1rem"></p>
+</div>
+
+<!-- PANEL -->
+<div id="panel" style="display:none">
+  <div class="topbar">
+    <img src="https://boolify-ia.github.io/web-images/PNG/LOGOLATRIBUNA90BLNACO.png" alt="">
+    <span>Admin Torneos</span>
+    <div class="links">
+      <a href="torneo.html" target="_blank"><i class="fas fa-eye"></i> Ver público</a>
+      <a href="index.html"><i class="fas fa-home"></i> Sitio</a>
+      <button class="nav-btn" onclick="location.reload()"><i class="fas fa-sign-out-alt"></i> Salir</button>
+    </div>
+  </div>
+  <div class="main">
+
+    <!-- CREAR TORNEO -->
+    <div class="card">
+      <div class="card-header"><h2>➕ Crear Nuevo Torneo</h2></div>
+      <div class="row" style="margin-bottom:.75rem">
+        <div class="field"><label>Nombre del torneo</label><input id="t-nombre" type="text" placeholder="Ej: Copa La Tribuna #1"></div>
+        <div class="field"><label>Formato</label>
+          <select id="t-formato" onchange="updateFormatoOptions()">
+            <option value="eliminacion">Eliminación directa</option>
+            <option value="grupos">Grupos + Eliminación</option>
+            <option value="liga">Todos contra todos (Liga)</option>
+          </select>
+        </div>
+      </div>
+      <div id="formato-opts" class="row" style="margin-bottom:.75rem"></div>
+      <button class="btn btn-gold" onclick="crearTorneo()"><i class="fas fa-plus"></i> Crear Torneo</button>
+      <p class="msg" id="create-msg" style="display:none;margin-top:.5rem"></p>
+    </div>
+
+    <!-- TORNEOS EXISTENTES -->
+    <div class="card">
+      <div class="card-header">
+        <h2>📋 Mis Torneos</h2>
+        <button class="btn btn-outline btn-sm" onclick="loadTorneos()"><i class="fas fa-sync"></i></button>
+      </div>
+      <div id="torneos-list"><div class="spinner-wrap"><div class="spinner"></div></div></div>
+    </div>
+
+    <!-- TORNEO ACTIVO - GESTIÓN -->
+    <div id="torneo-mgmt" style="display:none">
+      <div class="card">
+        <div class="card-header">
+          <h2 id="mgmt-title">Gestionar Torneo</h2>
+          <div style="display:flex;gap:.5rem;flex-wrap:wrap">
+            <button class="btn btn-green btn-sm" onclick="setActivo()"><i class="fas fa-broadcast-tower"></i> Activar</button>
+            <button class="btn btn-outline btn-sm" onclick="setFinalizado()"><i class="fas fa-flag-checkered"></i> Finalizar</button>
+          </div>
+        </div>
+
+        <!-- JUGADORES -->
+        <div class="card-header" style="margin-top:.5rem"><h2>👤 Jugadores</h2><button class="btn btn-outline btn-sm" onclick="toggleAddPlayer()"><i class="fas fa-plus"></i> Agregar</button></div>
+        <div id="add-player-form" style="display:none;margin-bottom:.75rem">
+          <div class="row" style="margin-bottom:.5rem">
+            <div class="field"><label>Nombre *</label><input id="p-nombre" type="text" placeholder="Apodo del jugador"></div>
+            <div class="field"><label>URL Foto (opcional)</label><input id="p-foto" type="url" placeholder="https://..."></div>
+          </div>
+          <button class="btn btn-green btn-sm" onclick="agregarJugador()"><i class="fas fa-user-plus"></i> Agregar jugador</button>
+          <p class="msg" id="player-msg" style="display:none;margin-top:.4rem"></p>
+        </div>
+        <div id="jugadores-list"></div>
+
+        <hr class="gold">
+
+        <!-- GENERAR FIXTURE -->
+        <div class="card-header"><h2>⚙️ Generar Fixture</h2></div>
+        <p style="color:var(--muted);font-size:.82rem;margin-bottom:.75rem">Una vez que tengas todos los jugadores registrados, genera el fixture. Esto crea todos los partidos y llaves automáticamente.</p>
+        <button class="btn btn-gold" onclick="generarFixture()"><i class="fas fa-random"></i> Generar Fixture Automático</button>
+        <p class="msg" id="fixture-msg" style="display:none;margin-top:.5rem"></p>
+      </div>
+
+      <!-- RESULTADOS -->
+      <div class="card">
+        <div class="card-header"><h2>⚽ Ingresar Resultados</h2><button class="btn btn-outline btn-sm" onclick="loadPartidos()"><i class="fas fa-sync"></i></button></div>
+        <div id="partidos-list"><div class="empty" style="color:var(--muted);font-size:.85rem;padding:1rem">Genera el fixture primero</div></div>
+      </div>
+
+      <!-- CAMPEÓN -->
+      <div class="card">
+        <div class="card-header"><h2>🏆 Declarar Campeón</h2></div>
+        <div class="row">
+          <div class="field"><label>Campeón del torneo</label>
+            <select id="campeon-select"><option value="">Seleccionar jugador...</option></select>
+          </div>
+          <div style="display:flex;align-items:flex-end">
+            <button class="btn btn-gold" onclick="setCampeon()"><i class="fas fa-trophy"></i> Declarar Campeón</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getFirestore, doc, getDoc, setDoc, updateDoc, addDoc, getDocs, deleteDoc, collection, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const db = getFirestore(initializeApp({
+  apiKey:"AIzaSyDpSwCwCwGtm2EXML5HWFrajqfKeZMff48",
+  authDomain:"latribuna90-static-web.firebaseapp.com",
+  projectId:"latribuna90-static-web",
+  storageBucket:"latribuna90-static-web.firebasestorage.app",
+  messagingSenderId:"961712839386",
+  appId:"1:961712839386:web:94e1a3f6a000c7d9a823e3"
+}));
+
+const PASS = 'tribuna2025$';
+let torneoActual = null;
+
+// ── LOGIN ──────────────────────────────────────────────────
+window.login = function(){
+  if(document.getElementById('pass').value === PASS){
+    document.getElementById('login').style.display='none';
+    document.getElementById('panel').style.display='block';
+    updateFormatoOptions();
+    loadTorneos();
+  } else {
+    document.getElementById('login-err').textContent='Contraseña incorrecta';
+  }
+};
+
+// ── FORMATO OPTIONS ────────────────────────────────────────
+window.updateFormatoOptions = function(){
+  const f = document.getElementById('t-formato').value;
+  const el = document.getElementById('formato-opts');
+  if(f==='grupos'){
+    el.innerHTML = `
+      <div class="field"><label>Jugadores por grupo</label><input id="t-porgrupo" type="number" value="4" min="3" max="6"></div>
+      <div class="field"><label>Clasificados por grupo</label><input id="t-clasif" type="number" value="2" min="1" max="4"></div>`;
+  } else {
+    el.innerHTML = '';
+  }
+};
+
+// ── CREAR TORNEO ───────────────────────────────────────────
+window.crearTorneo = async function(){
+  const nombre = document.getElementById('t-nombre').value.trim();
+  const formato = document.getElementById('t-formato').value;
+  const msg = document.getElementById('create-msg');
+  if(!nombre){ showMsg(msg,'err','Ingresa un nombre para el torneo'); return; }
+  const data = { nombre, formato, estado:'pendiente', jugadores:[], partidos:[], createdAt:serverTimestamp() };
+  if(formato==='grupos'){
+    data.porGrupo = parseInt(document.getElementById('t-porgrupo')?.value||4);
+    data.clasificadosPorGrupo = parseInt(document.getElementById('t-clasif')?.value||2);
+  }
+  try{
+    const ref = await addDoc(collection(db,'torneos'), data);
+    showMsg(msg,'ok',`✅ Torneo creado`);
+    document.getElementById('t-nombre').value='';
+    loadTorneos();
+    openMgmt(ref.id, {...data, id:ref.id});
+  }catch(e){ showMsg(msg,'err','Error creando torneo'); console.error(e); }
+};
+
+// ── TORNEOS LIST ───────────────────────────────────────────
+window.loadTorneos = async function(){
+  const el = document.getElementById('torneos-list');
+  el.innerHTML = '<div class="spinner-wrap"><div class="spinner"></div></div>';
+  const snap = await getDocs(query(collection(db,'torneos'), orderBy('createdAt','desc')));
+  if(!snap.size){ el.innerHTML='<div style="color:var(--muted);font-size:.85rem;padding:.5rem">No hay torneos aún</div>'; return; }
+  let html='';
+  snap.forEach(d=>{
+    const t={...d.data(),id:d.id};
+    const stBadge = t.estado==='activo'?'badge-green':t.estado==='finalizado'?'badge-gold':'badge-gray';
+    const fmtMap={eliminacion:'Eliminación',grupos:'Grupos+Elim',liga:'Liga'};
+    html+=`<div class="torneo-row">
+      <div>
+        <div class="tname">${t.nombre}</div>
+        <div class="tstate">${fmtMap[t.formato]||t.formato} · ${t.jugadores?.length||0} jugadores</div>
+      </div>
+      <span class="badge ${stBadge}">${t.estado}</span>
+      <button class="btn btn-outline btn-sm" onclick='openMgmtById("${d.id}")'><i class="fas fa-edit"></i> Gestionar</button>
+      <button class="btn btn-red btn-sm" onclick='deleteTorneo("${d.id}")'><i class="fas fa-trash"></i></button>
+    </div>`;
+  });
+  el.innerHTML = html;
+};
+
+window.openMgmtById = async function(id){
+  const snap = await getDoc(doc(db,'torneos',id));
+  if(snap.exists()) openMgmt(id, {...snap.data(), id});
+};
+
+function openMgmt(id, data){
+  torneoActual = {...data, id};
+  document.getElementById('torneo-mgmt').style.display='block';
+  document.getElementById('mgmt-title').textContent = data.nombre;
+  document.getElementById('torneo-mgmt').scrollIntoView({behavior:'smooth'});
+  renderJugadoresList();
+  loadPartidos();
+  updateCampeonSelect();
+}
+
+// ── ESTADO ─────────────────────────────────────────────────
+window.setActivo = async function(){
+  if(!torneoActual) return;
+  await updateDoc(doc(db,'torneos',torneoActual.id),{estado:'activo'});
+  await setDoc(doc(db,'config','torneo-activo'),{id:torneoActual.id});
+  torneoActual.estado='activo';
+  showMsg(document.getElementById('fixture-msg'),'ok','✅ Torneo activado y visible en la página pública');
+};
+window.setFinalizado = async function(){
+  if(!torneoActual) return;
+  await updateDoc(doc(db,'torneos',torneoActual.id),{estado:'finalizado'});
+  torneoActual.estado='finalizado';
+  showMsg(document.getElementById('fixture-msg'),'ok','✅ Torneo marcado como finalizado');
+};
+
+// ── JUGADORES ──────────────────────────────────────────────
+window.toggleAddPlayer = function(){
+  const el=document.getElementById('add-player-form');
+  el.style.display = el.style.display==='none'?'block':'none';
+};
+
+window.agregarJugador = async function(){
+  const nombre = document.getElementById('p-nombre').value.trim();
+  const foto = document.getElementById('p-foto').value.trim();
+  const msg = document.getElementById('player-msg');
+  if(!nombre){ showMsg(msg,'err','El nombre es obligatorio'); return; }
+  if(!torneoActual){ showMsg(msg,'err','Selecciona un torneo primero'); return; }
+  const id = nombre.toLowerCase().replace(/\s+/g,'-').replace(/[^a-z0-9-]/g,'') + '-' + Date.now().toString(36);
+  const jugadores = [...(torneoActual.jugadores||[]), {id, nombre, foto:foto||null}];
+  await updateDoc(doc(db,'torneos',torneoActual.id),{jugadores});
+  torneoActual.jugadores = jugadores;
+  document.getElementById('p-nombre').value='';
+  document.getElementById('p-foto').value='';
+  renderJugadoresList();
+  updateCampeonSelect();
+  showMsg(msg,'ok',`✅ ${nombre} agregado`);
+};
+
+function renderJugadoresList(){
+  const el = document.getElementById('jugadores-list');
+  const js = torneoActual?.jugadores||[];
+  if(!js.length){ el.innerHTML='<div style="color:var(--muted);font-size:.82rem;padding:.4rem">Sin jugadores aún</div>'; return; }
+  el.innerHTML = js.map((j,i)=>`
+    <div class="jugador-row">
+      <div class="j-avatar">${j.foto?`<img src="${j.foto}">`:(j.nombre[0]||'?')}</div>
+      <div>
+        <div class="j-name">${j.nombre}</div>
+        <div class="j-seed">Cabeza de serie #${i+1}</div>
+      </div>
+      <button class="btn btn-red btn-xs" onclick="removeJugador('${j.id}')"><i class="fas fa-times"></i></button>
+    </div>`).join('');
+}
+
+window.removeJugador = async function(id){
+  if(!confirm('¿Eliminar jugador?')) return;
+  const jugadores = torneoActual.jugadores.filter(j=>j.id!==id);
+  await updateDoc(doc(db,'torneos',torneoActual.id),{jugadores});
+  torneoActual.jugadores = jugadores;
+  renderJugadoresList();
+  updateCampeonSelect();
+};
+
+function updateCampeonSelect(){
+  const sel = document.getElementById('campeon-select');
+  sel.innerHTML = '<option value="">Seleccionar jugador...</option>';
+  (torneoActual?.jugadores||[]).forEach(j=>{
+    sel.innerHTML += `<option value="${j.id}">${j.nombre}</option>`;
+  });
+}
+
+// ── GENERAR FIXTURE ────────────────────────────────────────
+window.generarFixture = async function(){
+  const t = torneoActual;
+  const msg = document.getElementById('fixture-msg');
+  if(!t){ showMsg(msg,'err','Selecciona un torneo'); return; }
+  const js = t.jugadores||[];
+  if(js.length < 2){ showMsg(msg,'err','Necesitas al menos 2 jugadores'); return; }
+  if(!confirm(`¿Generar fixture para ${js.length} jugadores? Esto sobreescribirá partidos existentes.`)) return;
+
+  let partidos=[], bracket=null, grupos=null;
+  const shuffled = shuffle([...js]);
+
+  if(t.formato==='eliminacion'){
+    const r = generarEliminacion(shuffled);
+    bracket = r.bracket;
+    partidos = r.partidos;
+  } else if(t.formato==='grupos'){
+    const pg = t.porGrupo||4;
+    const gruposArr = crearGrupos(shuffled, pg);
+    grupos = gruposArr.map(g=>g.map(j=>j.id));
+    partidos = generarPartidosGrupos(gruposArr);
+  } else if(t.formato==='liga'){
+    partidos = generarLiga(shuffled);
+  }
+
+  await updateDoc(doc(db,'torneos',t.id),{
+    partidos, ...(bracket?{bracket}:{}), ...(grupos?{grupos}:{})
+  });
+  torneoActual = {...t, partidos, bracket, grupos};
+  loadPartidos();
+  showMsg(msg,'ok',`✅ Fixture generado: ${partidos.length} partidos`);
+};
+
+function generarEliminacion(js){
+  // Rellenar con BYE si no es potencia de 2
+  let n = 1; while(n < js.length) n*=2;
+  const padded = [...js, ...Array(n-js.length).fill(null)];
+  const bracket = [];
+  const partidos = [];
+  let pid = 0;
+  // Primera ronda
+  const r1 = [];
+  for(let i=0;i<padded.length;i+=2){
+    const j1=padded[i], j2=padded[i+1];
+    const m = {id:'p'+(pid++), j1:j1?.id||null, j2:j2?.id||null, score1:null, score2:null, ganador:null, ronda:'Ronda 1'};
+    // BYE automático
+    if(!j2){ m.ganador=j1.id; m.score1=3; m.score2=0; }
+    if(!j1){ m.ganador=j2.id; m.score1=0; m.score2=3; }
+    r1.push(m);
+    partidos.push(m);
+  }
+  bracket.push(r1);
+  // Rondas siguientes (vacías, se llenan con resultados)
+  let prev = r1;
+  while(prev.length > 1){
+    const rnd = [];
+    for(let i=0;i<prev.length;i+=2){
+      const m={id:'p'+(pid++), j1:null, j2:null, score1:null, score2:null, ganador:null, ronda:`Ronda ${bracket.length+1}`};
+      rnd.push(m); partidos.push(m);
+    }
+    bracket.push(rnd);
+    prev = rnd;
+  }
+  return {bracket, partidos};
+}
+
+function crearGrupos(js, pg){
+  const grupos=[]; let g=[];
+  js.forEach((j,i)=>{ g.push(j); if(g.length===pg||i===js.length-1){ grupos.push(g); g=[]; } });
+  return grupos;
+}
+
+function generarPartidosGrupos(grupos){
+  const partidos=[];
+  let pid=0;
+  grupos.forEach((g,gi)=>{
+    for(let i=0;i<g.length;i++){
+      for(let j=i+1;j<g.length;j++){
+        partidos.push({id:'p'+(pid++),j1:g[i].id,j2:g[j].id,score1:null,score2:null,ganador:null,grupo:gi});
+      }
+    }
+  });
+  return partidos;
+}
+
+function generarLiga(js){
+  const partidos=[]; let pid=0;
+  for(let i=0;i<js.length;i++){
+    for(let j=i+1;j<js.length;j++){
+      partidos.push({id:'p'+(pid++),j1:js[i].id,j2:js[j].id,score1:null,score2:null,ganador:null,ronda:'Liga'});
+    }
+  }
+  return partidos;
+}
+
+// ── RESULTADOS ─────────────────────────────────────────────
+window.loadPartidos = function(){
+  const el = document.getElementById('partidos-list');
+  const partidos = torneoActual?.partidos||[];
+  if(!partidos.length){ el.innerHTML='<div style="color:var(--muted);font-size:.85rem;padding:.4rem">Genera el fixture primero</div>'; return; }
+  const pendientes = partidos.filter(p=>p.score1==null);
+  const jugados = partidos.filter(p=>p.score1!=null);
+  let html='';
+  if(pendientes.length){
+    html+='<div style="font-family:var(--S);font-size:.72rem;text-transform:uppercase;letter-spacing:.1em;color:var(--gold);margin-bottom:.5rem">Pendientes</div>';
+    pendientes.forEach(p=>{ html+=partidoRow(p); });
+  }
+  if(jugados.length){
+    html+=`<div style="font-family:var(--S);font-size:.72rem;text-transform:uppercase;letter-spacing:.1em;color:var(--gold);margin:.75rem 0 .5rem">Jugados</div>`;
+    jugados.forEach(p=>{ html+=partidoRow(p,true); });
+  }
+  el.innerHTML=html;
+};
+
+function partidoRow(p, readonly=false){
+  const t=torneoActual;
+  const j1=t.jugadores?.find(j=>j.id===p.j1), j2=t.jugadores?.find(j=>j.id===p.j2);
+  const etapa=p.grupo!=null?`Grupo ${String.fromCharCode(65+p.grupo)}`:(p.ronda||'Partido');
+  if(readonly){
+    return `<div class="partido-row" style="opacity:.7">
+      <div class="names">${j1?.nombre||'?'} <span style="color:var(--gold);font-family:var(--T)"> ${p.score1} - ${p.score2} </span> ${j2?.nombre||'?'}</div>
+      <span style="font-size:.7rem;color:var(--muted)">${etapa}</span>
+      <button class="btn btn-outline btn-xs" onclick="resetPartido('${p.id}')"><i class="fas fa-undo"></i></button>
+    </div>`;
+  }
+  return `<div class="partido-row" id="row-${p.id}">
+    <div class="names" style="font-size:.82rem">${j1?.nombre||'Por definir'} vs ${j2?.nombre||'Por definir'}<br><span style="font-size:.68rem;color:var(--muted)">${etapa}</span></div>
+    <input class="score-input" type="number" id="s1-${p.id}" placeholder="0" min="0" max="99" ${!j1||!j2?'disabled':''}>
+    <span class="vs">–</span>
+    <input class="score-input" type="number" id="s2-${p.id}" placeholder="0" min="0" max="99" ${!j1||!j2?'disabled':''}>
+    <button class="btn btn-green btn-xs" onclick="guardarResultado('${p.id}')" ${!j1||!j2?'disabled':''}><i class="fas fa-check"></i></button>
+  </div>`;
+}
+
+window.guardarResultado = async function(pid){
+  const t = torneoActual;
+  const s1 = parseInt(document.getElementById(`s1-${pid}`)?.value);
+  const s2 = parseInt(document.getElementById(`s2-${pid}`)?.value);
+  if(isNaN(s1)||isNaN(s2)){ alert('Ingresa ambos resultados'); return; }
+  const partidos = t.partidos.map(p=>{
+    if(p.id!==pid) return p;
+    const ganador = s1>s2?p.j1:s2>s1?p.j2:null;
+    return {...p, score1:s1, score2:s2, ganador};
+  });
+  // Si es eliminación, avanzar ganador
+  let bracket = t.bracket;
+  if(t.formato==='eliminacion' && bracket){
+    bracket = avanzarBracket(bracket, partidos);
+  }
+  await updateDoc(doc(db,'torneos',t.id),{partidos,...(bracket?{bracket}:{})});
+  torneoActual = {...t, partidos, bracket};
+  loadPartidos();
+};
+
+window.resetPartido = async function(pid){
+  const partidos = torneoActual.partidos.map(p=>p.id===pid?{...p,score1:null,score2:null,ganador:null}:p);
+  await updateDoc(doc(db,'torneos',torneoActual.id),{partidos});
+  torneoActual.partidos=partidos; loadPartidos();
+};
+
+function avanzarBracket(bracket, partidos){
+  // Para cada ronda, el ganador avanza al siguiente partido
+  for(let ri=0;ri<bracket.length-1;ri++){
+    const ronda=bracket[ri];
+    for(let mi=0;mi<ronda.length;mi+=2){
+      const m1=partidos.find(p=>p.id===ronda[mi]?.id);
+      const m2=partidos.find(p=>p.id===ronda[mi+1]?.id);
+      const nextMatch=bracket[ri+1]?.[Math.floor(mi/2)];
+      if(nextMatch){
+        const idx=partidos.findIndex(p=>p.id===nextMatch.id);
+        if(idx>=0){
+          partidos[idx]={...partidos[idx],j1:m1?.ganador||null,j2:m2?.ganador||null};
+          bracket[ri+1][Math.floor(mi/2)]=partidos[idx];
+        }
+      }
+    }
+  }
+  return bracket;
+}
+
+// ── CAMPEÓN ────────────────────────────────────────────────
+window.setCampeon = async function(){
+  const id = document.getElementById('campeon-select').value;
+  if(!id){ alert('Selecciona un jugador'); return; }
+  await updateDoc(doc(db,'torneos',torneoActual.id),{campeon:id, estado:'finalizado'});
+  torneoActual.campeon=id;
+  alert('🏆 ¡Campeón declarado!');
+};
+
+// ── DELETE ─────────────────────────────────────────────────
+window.deleteTorneo = async function(id){
+  if(!confirm('¿Eliminar este torneo? Esta acción no se puede deshacer.')) return;
+  await deleteDoc(doc(db,'torneos',id));
+  loadTorneos();
+  if(torneoActual?.id===id){ torneoActual=null; document.getElementById('torneo-mgmt').style.display='none'; }
+};
+
+// ── UTILS ──────────────────────────────────────────────────
+function showMsg(el, type, msg){ el.style.display='block'; el.className='msg '+type; el.textContent=msg; setTimeout(()=>el.style.display='none',4000); }
+function shuffle(a){const b=[...a];for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]];}return b;}
+window.openMgmt=openMgmt;
+</script>
+</body>
+</html>
