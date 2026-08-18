@@ -104,6 +104,17 @@
       <div class="card-header"><h2>➕ Crear Nuevo Torneo</h2></div>
       <div class="row" style="margin-bottom:.75rem">
         <div class="field"><label>Nombre del torneo</label><input id="t-nombre" type="text" placeholder="Ej: Copa La Tribuna #1"></div>
+        <div class="field"><label>Número de jugadores esperados</label><input id="t-njugadores" type="number" min="2" max="32" placeholder="Ej: 8" oninput="calcRecomendacion()"></div>
+      </div>
+
+      <!-- RECOMENDACIÓN -->
+      <div id="rec-box" style="display:none;margin-bottom:.75rem;border:1px solid rgba(212,175,55,.3);border-radius:.6rem;overflow:hidden">
+        <div style="background:rgba(49,75,54,.4);padding:.5rem .9rem;font-family:var(--S);font-size:.7rem;font-weight:700;text-transform:uppercase;letter-spacing:.1em;color:#81c784">⚡ Recomendación automática</div>
+        <div style="padding:.75rem .9rem;display:grid;grid-template-columns:1fr 1fr 1fr;gap:.6rem" id="rec-cards"></div>
+        <div style="padding:.4rem .9rem .75rem;font-size:.8rem;color:rgba(245,240,232,.7)" id="rec-summary"></div>
+      </div>
+
+      <div class="row" style="margin-bottom:.75rem">
         <div class="field"><label>Formato</label>
           <select id="t-formato" onchange="updateFormatoOptions()">
             <option value="eliminacion">Eliminación directa</option>
@@ -194,6 +205,78 @@ const db = getFirestore(initializeApp({
   appId:"1:961712839386:web:94e1a3f6a000c7d9a823e3"
 }));
 
+const SLOT_MIN = 5; // 4 min partido + 1 min cambio
+const CONSOLAS = 2;
+const MAX_MIN = 180;
+
+function calcElim(n){
+  let p=1; while(p<n) p*=2;
+  const total=p-1, slots=Math.ceil(total/CONSOLAS), min=slots*SLOT_MIN;
+  const minPJ=1, maxPJ=Math.log2(p);
+  return {nombre:'Eliminación directa',key:'eliminacion',total,min,minPJ,maxPJ:Math.round(maxPJ),viable:min<=MAX_MIN};
+}
+function calcGrupos(n){
+  const pg=n<=8?4:n<=12?4:4, nG=Math.ceil(n/pg), pgR=Math.ceil(n/nG);
+  const internas=Math.floor(pgR*(pgR-1)/2)*nG;
+  let e=1; const cl=nG*2; while(e<cl) e*=2;
+  const elimP=e-1, total=internas+elimP, min=Math.ceil(total/CONSOLAS)*SLOT_MIN;
+  const minPJ=pgR-1, maxPJ=(pgR-1)+Math.ceil(Math.log2(cl));
+  return {nombre:'Grupos + Eliminación',key:'grupos',total,min,minPJ,maxPJ,viable:min<=MAX_MIN,nG,pgR};
+}
+function calcLiga(n){
+  const total=Math.floor(n*(n-1)/2), min=Math.ceil(total/CONSOLAS)*SLOT_MIN;
+  return {nombre:'Todos contra todos',key:'liga',total,min,minPJ:n-1,maxPJ:n-1,viable:min<=MAX_MIN};
+}
+function fmtMin(m){ const h=Math.floor(m/60),mm=m%60; return h>0?`${h}h ${mm}m`:`${mm} min`; }
+
+window.calcRecomendacion = function(){
+  const n = parseInt(document.getElementById('t-njugadores').value);
+  const box = document.getElementById('rec-box');
+  if(!n || n < 2){ box.style.display='none'; return; }
+  box.style.display='block';
+
+  const opts = [calcElim(n), calcGrupos(n), calcLiga(n)];
+  // Recomendar: preferir liga si cabe, luego grupos si min>=2 por jugador, luego eliminacion
+  let rec = opts[0].key;
+  if(opts[2].viable) rec='liga';
+  else if(opts[1].viable && opts[1].minPJ>=2) rec='grupos';
+
+  document.getElementById('rec-cards').innerHTML = opts.map(d=>{
+    const isRec = d.key===rec;
+    const color = d.viable?(isRec?'#D4AF37':'#81c784'):'#ef9a9a';
+    const bg = d.viable?(isRec?'rgba(212,175,55,.15)':'rgba(49,75,54,.25)'):'rgba(197,69,46,.2)';
+    const border = isRec?'1px solid var(--gold)':'1px solid rgba(255,255,255,.1)';
+    return `<div style="background:${bg};border:${border};border-radius:.5rem;padding:.6rem .75rem;cursor:pointer" onclick="aplicarFormato('${d.key}')">
+      <div style="font-family:var(--S);font-size:.72rem;font-weight:700;color:${color};text-transform:uppercase;letter-spacing:.06em;margin-bottom:.3rem">
+        ${isRec?'★ ':''} ${d.nombre}
+      </div>
+      <div style="font-size:.8rem;color:rgba(245,240,232,.9)">${fmtMin(d.min)}</div>
+      <div style="font-size:.72rem;color:rgba(245,240,232,.55)">${d.total} partidos</div>
+      <div style="font-size:.72rem;color:${d.viable?'#81c784':'#ef9a9a'}">${d.minPJ}–${d.maxPJ} partidos/jugador${!d.viable?' ✗':''}</div>
+    </div>`;
+  }).join('');
+
+  const recData = opts.find(o=>o.key===rec);
+  let msg = '';
+  if(rec==='liga') msg=`Con ${n} jugadores, todos contra todos cabe en ${fmtMin(recData.min)} y garantiza ${recData.minPJ} partidos por jugador.`;
+  else if(rec==='grupos') msg=`Con ${n} jugadores se forman ${recData.nG} grupos de ~${recData.pgR}. Mínimo ${recData.minPJ} partidos garantizados. Duración estimada: ${fmtMin(recData.min)}.`;
+  else msg=`Con ${n} jugadores solo cabe eliminación directa (${fmtMin(recData.min)}). Algunos jugadores pueden quedar con 1 solo partido.`;
+  document.getElementById('rec-summary').textContent = '💡 ' + msg;
+
+  // Auto-seleccionar el formato recomendado en el select
+  aplicarFormato(rec);
+};
+
+window.aplicarFormato = function(key){
+  document.getElementById('t-formato').value = key;
+  updateFormatoOptions();
+  // Highlight selected
+  document.querySelectorAll('#rec-cards > div').forEach((el,i)=>{
+    const keys=['eliminacion','grupos','liga'];
+    const isThis = keys[i]===key;
+    el.style.border = isThis?'1px solid var(--gold)':'1px solid rgba(255,255,255,.1)';
+  });
+};
 const PASS = 'tribuna2025$';
 let torneoActual = null;
 
