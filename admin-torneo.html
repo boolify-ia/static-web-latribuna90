@@ -675,14 +675,15 @@ window.guardarResultado = async function(pid){
     return;
   }
 
-  // ── PARTIDO SIMPLE: empate → modal ──
-  if(s1 === s2){
+  // ── PARTIDO SIMPLE: empate → modal solo en eliminación ──
+  if(s1 === s2 && t.formato === 'eliminacion'){
     torneoActual = {...t, partidos};
     mostrarModalDesempate(pid, p.j1, p.j2, `Empate ${s1}-${s2}. Define quién avanza:`);
     return;
   }
 
-  const ganador = s1 > s2 ? p.j1 : p.j2;
+  // En grupos/liga el empate es válido → guardar sin definir ganador
+  const ganador = s1 > s2 ? p.j1 : s2 > s1 ? p.j2 : null;
   await finalizarPartido(pid, s1, s2, ganador, partidos);
 };
 
