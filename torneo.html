@@ -221,12 +221,13 @@ function render(t){
 
 function buildTabs(t){
   const tabs = [];
+  const tieneElim = (t.partidos||[]).some(p=>p.rondaIdx!=null);
   if(t.formato==='eliminacion'){
     tabs.push({label:'🏆 Bracket', content: renderBracket});
   }
   if(t.formato==='grupos'){
     tabs.push({label:'👥 Grupos', content: renderGrupos});
-    if(t.bracket) tabs.push({label:'⚡ Eliminación', content: renderBracket});
+    if(tieneElim) tabs.push({label:'⚡ Eliminación', content: renderBracket});
   }
   if(t.formato==='liga'){
     tabs.push({label:'📊 Tabla', content: renderLiga});
