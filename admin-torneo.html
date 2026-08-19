@@ -647,17 +647,23 @@ window.guardarResultado = async function(pid){
   if(isNaN(s1)||isNaN(s2)){ alert('Ingresa ambos resultados'); return; }
 
   const p = t.partidos.find(x => x.id === pid);
+  let partidos = t.partidos.map(x => x.id === pid ? {...x, score1:s1, score2:s2} : x);
 
-  // Si es vuelta de ida/vuelta, calcular marcador acumulado
+  // ── PARTIDO DE IDA: guardar sin definir ganador, esperar vuelta ──
+  if(p.esIda){
+    await updateDoc(doc(db,'torneos',t.id),{partidos});
+    torneoActual = {...t, partidos};
+    loadPartidos();
+    return;
+  }
+
+  // ── PARTIDO DE VUELTA: calcular marcador acumulado ──
   if(p.esVuelta){
     const ida = t.partidos.find(x => x.esIda && x.ordenEnRonda === p.ordenEnRonda && x.rondaIdx === p.rondaIdx);
-    if(ida && ida.score1 != null){
-      // j1 del ida acumula: goles_ida + goles_como_visitante_en_vuelta
-      const acumJ1 = (ida.score1||0) + s2;
+    if(ida?.score1 != null){
+      const acumJ1 = (ida.score1||0) + s2; // j1 del ida acumula goles en ida + goles recibidos en vuelta (como visitante)
       const acumJ2 = (ida.score2||0) + s1;
-      const partidos = t.partidos.map(x => x.id === pid ? {...x, score1:s1, score2:s2} : x);
       if(acumJ1 === acumJ2){
-        // Empate total → mostrar modal
         torneoActual = {...t, partidos};
         mostrarModalDesempate(pid, ida.j1, ida.j2, `Marcador acumulado ${acumJ1}-${acumJ2}. Define quién avanza:`);
         return;
@@ -668,10 +674,8 @@ window.guardarResultado = async function(pid){
     }
   }
 
-  const partidos = t.partidos.map(x => x.id === pid ? {...x, score1:s1, score2:s2} : x);
-
+  // ── PARTIDO SIMPLE: empate → modal ──
   if(s1 === s2){
-    // Empate en partido simple → mostrar modal de desempate
     torneoActual = {...t, partidos};
     mostrarModalDesempate(pid, p.j1, p.j2, `Empate ${s1}-${s2}. Define quién avanza:`);
     return;
