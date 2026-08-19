@@ -597,18 +597,27 @@ window.loadPartidos = function(){
 
   const pendientes=partidos.filter(p=>p.score1==null);
   const jugados=partidos.filter(p=>p.score1!=null);
+  const totalJugados=jugados.length;
   let html='';
 
   if(pendientes.length){
     html+='<div style="font-family:var(--S);font-size:.72rem;text-transform:uppercase;letter-spacing:.1em;color:var(--gold);margin-bottom:.5rem">Pendientes</div>';
-    pendientes.forEach(p=>{
+    pendientes.forEach((p,i)=>{
+      const numPartido = totalJugados + i + 1;
+      const consola = ((numPartido-1)%2)+1;
+      const slot = Math.floor((numPartido-1)/2)+1;
       const j1=T.jugadores?.find(j=>j.id===p.j1),j2=T.jugadores?.find(j=>j.id===p.j2);
       const sin=!j1||!j2;
-      const tieneVuelta=T.partidos.some(x=>x.esVuelta&&x.ordenEnRonda===p.ordenEnRonda&&x.rondaIdx===p.rondaIdx);
-      const esIda=p.esIda||tieneVuelta;
       const etaLabel=getRonda(p)+(p.esIda?' · Ida':p.esVuelta?' · Vuelta':'');
+      const ps1Label=`<span style="background:rgba(49,75,54,.4);border:1px solid #4caf50;color:#81c784;font-family:var(--S);font-size:.62rem;font-weight:700;padding:.1rem .4rem;border-radius:.3rem">🎮 PS1</span>`;
+      const ps2Label=`<span style="background:rgba(212,175,55,.1);border:1px solid var(--gold);color:var(--gold);font-family:var(--S);font-size:.62rem;font-weight:700;padding:.1rem .4rem;border-radius:.3rem">🎮 PS2</span>`;
       html+=`<div class="partido-row">
         <div class="names" style="font-size:.82rem">
+          <div style="display:flex;align-items:center;gap:.4rem;margin-bottom:.25rem">
+            <span style="font-family:var(--T);font-size:.85rem;color:var(--muted)">#${numPartido}</span>
+            ${consola===1?ps1Label:ps2Label}
+            <span style="font-size:.65rem;color:var(--muted)">Turno ${slot}</span>
+          </div>
           ${j1?.nombre||'<em style="color:var(--muted)">Por definir</em>'} vs ${j2?.nombre||'<em style="color:var(--muted)">Por definir</em>'}
           <br><span style="font-size:.68rem;color:var(--muted)">${etaLabel}</span>
           ${p.idaVuelta?'<br><span style="font-size:.65rem;color:#81c784">↔ Ida y vuelta</span>':''}

@@ -378,23 +378,47 @@ function renderPartidos(t){
   const pendientes = partidos.filter(p=>p.score1==null);
   const jugados = partidos.filter(p=>p.score1!=null).reverse();
   let html = '';
+
   if(pendientes.length){
-    html += `<div class="section-label">Próximos partidos</div><div class="partidos-list">`;
-    pendientes.forEach(p=>{ html += partidoCard(p, t, false); });
-    html += '</div>';
+    // Agrupar pendientes en rondas de 2 (una por consola)
+    html += `<div class="section-label">Próximos partidos</div>`;
+    // Calcular número global de partido (todos los partidos incluyendo jugados)
+    const totalJugados = jugados.length;
+    pendientes.forEach((p, i) => {
+      const numPartido = totalJugados + i + 1;
+      const consola = ((numPartido - 1) % 2) + 1;
+      // Agrupador de slot (cada 2 partidos van en paralelo)
+      const slot = Math.floor((numPartido - 1) / 2) + 1;
+      if(i % 2 === 0){
+        if(i > 0) html += '</div>';
+        html += `<div style="margin-bottom:.5rem">
+          <div style="font-family:var(--S);font-size:.65rem;text-transform:uppercase;letter-spacing:.1em;color:var(--muted);padding:.3rem 0">
+            ⏱ Turno ${slot}
+          </div>
+          <div style="display:flex;flex-direction:column;gap:.4rem">`;
+      }
+      html += partidoCard(p, t, false, numPartido, consola);
+      if(i === pendientes.length - 1) html += '</div></div>';
+    });
   }
+
   if(jugados.length){
     html += `<div class="section-label" style="margin-top:1.5rem">Resultados</div><div class="partidos-list">`;
-    jugados.forEach(p=>{ html += partidoCard(p, t, true); });
+    jugados.forEach((p, i) => {
+      const numPartido = jugados.length - i;
+      html += partidoCard(p, t, true, numPartido, ((numPartido-1)%2)+1);
+    });
     html += '</div>';
   }
   return html;
 }
 
-function partidoCard(p, t, jugado){
+function partidoCard(p, t, jugado, numPartido=null, consola=null){
   const j1=t.jugadores?.find(j=>j.id===p.j1), j2=t.jugadores?.find(j=>j.id===p.j2);
   const win1 = jugado && p.score1>p.score2, win2 = jugado && p.score2>p.score1;
   const etapa = p.grupo!=null?`Grupo ${String.fromCharCode(65+p.grupo)}`:p.ronda||'Partido';
+  const consolaLabel = consola ? `<span style="background:${consola===1?'rgba(49,75,54,.5)':'rgba(54,19,14,.8)'};border:1px solid ${consola===1?'#4caf50':' var(--gold)'};color:${consola===1?'#81c784':'var(--gold)'};font-family:var(--S);font-size:.65rem;font-weight:700;padding:.15rem .5rem;border-radius:.4rem;letter-spacing:.06em;text-transform:uppercase">🎮 PS${consola}</span>` : '';
+  const numLabel = numPartido ? `<span style="font-family:var(--T);font-size:.9rem;color:var(--muted)">#${numPartido}</span>` : '';
   return `<div class="partido-card ${jugado?'jugado':''}">
     <div class="partido-player">
       ${avatar(j1,36)}
@@ -407,7 +431,9 @@ function partidoCard(p, t, jugado){
       <span style="font-family:var(--S);font-weight:${win2?'700':'600'};color:${win2?'#81c784':'var(--cream)'}">${j2?.nombre||'Por definir'}</span>
       ${avatar(j2,36)}
     </div>
-    <div class="partido-meta">${etapa}</div>
+    <div class="partido-meta" style="display:flex;align-items:center;justify-content:center;gap:.6rem">
+      ${numLabel} ${consolaLabel} <span>${etapa}</span>
+    </div>
   </div>`;
 }
 
