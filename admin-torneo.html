@@ -507,31 +507,56 @@ function bracketFromFirestore(obj){
 }
 
 function generarEliminacion(js){
-  let n=1; while(n<js.length) n*=2;
-  const padded=[...js,...Array(n-js.length).fill(null)];
-  const partidos=[];
-  let pid=0;
-  // Construir todas las rondas como partidos planos con rondaIdx y ordenEnRonda
-  let rondaActual=[];
-  for(let i=0;i<padded.length;i+=2){
-    const j1=padded[i],j2=padded[i+1];
-    const m={id:'p'+(pid++),j1:j1?.id||null,j2:j2?.id||null,score1:null,score2:null,ganador:null,rondaIdx:0,ordenEnRonda:Math.floor(i/2)};
-    if(j2===null&&j1){m.ganador=j1.id;m.score1=3;m.score2=0;}
-    if(j1===null&&j2){m.ganador=j2.id;m.score1=0;m.score2=3;}
-    rondaActual.push(m);
-    partidos.push(m);
+  const n = js.length;
+
+  // Potencia de 2 <= n para los clasificados (ronda 2 en adelante)
+  let clasif = 1; while(clasif * 2 <= n) clasif *= 2;
+  // Jugadores que juegan R1 (ida+vuelta): (n - clasif) pares
+  const nPares = n - clasif; // número de partidos de primera ronda
+  const nJueganR1 = nPares * 2;
+  const nByes = clasif - nPares; // pasan directo
+
+  // Sorteo: primeros nJueganR1 juegan R1, resto tienen BYE
+  const shuffled = [...js];
+  const jugadoresR1 = shuffled.slice(0, nJueganR1);
+  const byeJugadores = shuffled.slice(nJueganR1);
+
+  const partidos = [];
+  let pid = 0;
+
+  // ── RONDA 1: ida y vuelta ──────────────────────────────
+  for(let i = 0; i < nJueganR1; i += 2){
+    const j1 = jugadoresR1[i], j2 = jugadoresR1[i+1];
+    const orden = Math.floor(i / 2);
+    // Ida
+    partidos.push({ id:'p'+(pid++), j1:j1.id, j2:j2.id, score1:null, score2:null, ganador:null, rondaIdx:0, ordenEnRonda:orden, esIda:true });
+    // Vuelta
+    partidos.push({ id:'p'+(pid++), j1:j2.id, j2:j1.id, score1:null, score2:null, ganador:null, rondaIdx:0, ordenEnRonda:orden, esVuelta:true });
   }
-  // Rondas siguientes vacías
-  let ri=1;
-  while(rondaActual.length>1){
-    const siguiente=[];
-    for(let i=0;i<rondaActual.length;i+=2){
-      const m={id:'p'+(pid++),j1:null,j2:null,score1:null,score2:null,ganador:null,rondaIdx:ri,ordenEnRonda:Math.floor(i/2)};
-      siguiente.push(m);partidos.push(m);
+
+  // ── RONDAS 2 EN ADELANTE: eliminación simple ───────────
+  // Ronda 2 tiene: nPares ganadores de R1 (TBD) + nByes jugadores conocidos
+  // Total ronda 2 = clasif (potencia de 2) ✓
+  let rondaSize = clasif;
+  let ri = 1;
+  while(rondaSize >= 2){
+    for(let i = 0; i < rondaSize; i += 2){
+      const orden = Math.floor(i / 2);
+      // En ronda 2, los BYEs ya tienen jugador asignado
+      let j1id = null, j2id = null;
+      if(ri === 1){
+        // Las primeras nPares posiciones son TBD (ganadores R1)
+        // Las siguientes nByes posiciones son BYEs conocidos
+        if(i >= nPares) j1id = byeJugadores[i - nPares]?.id || null;
+        if((i+1) >= nPares) j2id = byeJugadores[(i+1) - nPares]?.id || null;
+      }
+      partidos.push({ id:'p'+(pid++), j1:j1id, j2:j2id, score1:null, score2:null, ganador:null, rondaIdx:ri, ordenEnRonda:orden });
     }
-    rondaActual=siguiente;ri++;
+    rondaSize = rondaSize / 2;
+    ri++;
   }
-  return {bracket:null,partidos};
+
+  return { bracket: null, partidos };
 }
 
 function crearGrupos(js, pg){
@@ -583,13 +608,16 @@ window.loadPartidos = function(){
 };
 
 function getRondaNombre(p, totalRondas){
-  if(p.grupo!=null) return `Grupo ${String.fromCharCode(65+p.grupo)}`;
-  if(p.rondaIdx!=null){
-    const rondas = {0:'Final',1:'Semifinal',2:'Cuartos de Final',3:'Octavos de Final'};
-    const desdeFinale = (totalRondas||4) - 1 - p.rondaIdx;
-    return rondas[desdeFinale] || `Ronda ${p.rondaIdx+1}`;
+  if(p.grupo != null) return `Grupo ${String.fromCharCode(65 + p.grupo)}`;
+  if(p.rondaIdx === 0){
+    return p.esIda ? 'R1 · Ida' : p.esVuelta ? 'R1 · Vuelta' : 'Ronda 1';
   }
-  return p.ronda||'Partido';
+  if(p.rondaIdx != null){
+    const nombres = {0:'Final', 1:'Semifinal', 2:'Cuartos de Final', 3:'Octavos de Final', 4:'16avos de Final'};
+    const desdeFinale = (totalRondas || 4) - 1 - p.rondaIdx;
+    return nombres[desdeFinale] || `Ronda ${p.rondaIdx + 1}`;
+  }
+  return p.ronda || 'Partido';
 }
 
 function partidoRow(p, readonly=false){
@@ -645,22 +673,55 @@ window.resetPartido = async function(pid){
 };
 
 function avanzarBracket(bracket, partidos){
-  // Con la nueva estructura plana, avanzar ganadores por rondaIdx
-  const maxRonda = Math.max(...partidos.map(p=>p.rondaIdx||0));
-  for(let ri=0; ri<maxRonda; ri++){
-    const rondaActual = partidos.filter(p=>p.rondaIdx===ri).sort((a,b)=>(a.ordenEnRonda||0)-(b.ordenEnRonda||0));
-    for(let i=0; i<rondaActual.length; i+=2){
-      const m1=rondaActual[i], m2=rondaActual[i+1];
-      const siguiente=partidos.find(p=>p.rondaIdx===ri+1&&p.ordenEnRonda===Math.floor(i/2));
+  // ── Resolver pares de ida/vuelta en ronda 0 ───────────
+  // Agrupar por ordenEnRonda
+  const r0 = partidos.filter(p => p.rondaIdx === 0);
+  const ordenes = [...new Set(r0.map(p => p.ordenEnRonda))];
+
+  ordenes.forEach(orden => {
+    const par = r0.filter(p => p.ordenEnRonda === orden);
+    const ambosJugados = par.every(p => p.score1 != null);
+    if(!ambosJugados) return;
+
+    // Calcular marcador acumulado
+    // El j1 del partido de ida es el "local"
+    const ida    = par.find(p => p.esIda)    || par[0];
+    const vuelta = par.find(p => p.esVuelta) || par[1];
+    if(!ida || !vuelta) return;
+
+    const golesJ1 = (ida.score1 || 0) + (vuelta.score2 || 0);
+    const golesJ2 = (ida.score2 || 0) + (vuelta.score1 || 0);
+    const ganadorId = golesJ1 > golesJ2 ? ida.j1 : golesJ2 > golesJ1 ? ida.j2 : null;
+    // En caso de empate acumulado: goles de visita desempatan (más goles de visita gana)
+    // vuelta.score1 = goles de j2 como local (visitante en ida)
+    // Si sigue empate, gana j1 del ida (cabeza de serie)
+    const ganadorFinal = ganadorId || (vuelta.score1 > ida.score2 ? ida.j2 : ida.j1);
+
+    // Asignar ganador al partido de ronda 2 (rondaIdx=1) correspondiente
+    const idxR2 = partidos.findIndex(p => p.rondaIdx === 1 && p.ordenEnRonda === orden);
+    if(idxR2 >= 0){
+      // El ganador ocupa la posición j1 (las primeras nPares posiciones de R2)
+      partidos[idxR2] = { ...partidos[idxR2], j1: ganadorFinal };
+    }
+  });
+
+  // ── Avanzar ganadores en rondas simples (ronda 1 en adelante) ───
+  const maxRonda = Math.max(...partidos.map(p => p.rondaIdx || 0));
+  for(let ri = 1; ri < maxRonda; ri++){
+    const ronda = partidos.filter(p => p.rondaIdx === ri && !p.esIda && !p.esVuelta)
+                          .sort((a,b) => (a.ordenEnRonda||0) - (b.ordenEnRonda||0));
+    for(let i = 0; i < ronda.length; i += 2){
+      const m1 = ronda[i], m2 = ronda[i+1];
+      if(!m1?.ganador || !m2?.ganador) continue;
+      const siguiente = partidos.find(p => p.rondaIdx === ri+1 && p.ordenEnRonda === Math.floor(i/2));
       if(siguiente){
-        const idx=partidos.findIndex(p=>p.id===siguiente.id);
-        if(idx>=0){
-          partidos[idx]={...partidos[idx], j1:m1?.ganador||null, j2:m2?.ganador||null};
+        const idx = partidos.findIndex(p => p.id === siguiente.id);
+        if(idx >= 0){
+          partidos[idx] = { ...partidos[idx], j1: m1.ganador, j2: m2.ganador };
         }
       }
     }
   }
-  return null; // bracket ya no se usa como estructura separada
 }
 
 // ── CAMPEÓN ────────────────────────────────────────────────
