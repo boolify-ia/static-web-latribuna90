@@ -462,9 +462,9 @@ window.generarFixture = async function(){
   }
 
   await updateDoc(doc(db,'torneos',t.id),{
-    partidos, ...(bracket?{bracket: bracketToFirestore(bracket)}:{}), ...(grupos?{grupos}:{})
+    partidos, ...(grupos?{grupos}:{})
   });
-  torneoActual = {...torneoActual, partidos, bracket, grupos};
+  torneoActual = {...torneoActual, partidos, grupos};
   loadPartidos();
   showMsg(msg,'ok',`✅ Fixture generado: ${partidos.length} partidos`);
 };
@@ -508,36 +508,31 @@ function bracketFromFirestore(obj){
 }
 
 function generarEliminacion(js){
-  // Rellenar con BYE si no es potencia de 2
-  let n = 1; while(n < js.length) n*=2;
-  const padded = [...js, ...Array(n-js.length).fill(null)];
-  const bracket = [];
-  const partidos = [];
-  let pid = 0;
-  // Primera ronda
-  const r1 = [];
+  let n=1; while(n<js.length) n*=2;
+  const padded=[...js,...Array(n-js.length).fill(null)];
+  const partidos=[];
+  let pid=0;
+  // Construir todas las rondas como partidos planos con rondaIdx y ordenEnRonda
+  let rondaActual=[];
   for(let i=0;i<padded.length;i+=2){
-    const j1=padded[i], j2=padded[i+1];
-    const m = {id:'p'+(pid++), j1:j1?.id||null, j2:j2?.id||null, score1:null, score2:null, ganador:null, ronda:'Ronda 1'};
-    // BYE automático
-    if(!j2){ m.ganador=j1.id; m.score1=3; m.score2=0; }
-    if(!j1){ m.ganador=j2.id; m.score1=0; m.score2=3; }
-    r1.push(m);
+    const j1=padded[i],j2=padded[i+1];
+    const m={id:'p'+(pid++),j1:j1?.id||null,j2:j2?.id||null,score1:null,score2:null,ganador:null,rondaIdx:0,ordenEnRonda:Math.floor(i/2)};
+    if(j2===null&&j1){m.ganador=j1.id;m.score1=3;m.score2=0;}
+    if(j1===null&&j2){m.ganador=j2.id;m.score1=0;m.score2=3;}
+    rondaActual.push(m);
     partidos.push(m);
   }
-  bracket.push(r1);
-  // Rondas siguientes (vacías, se llenan con resultados)
-  let prev = r1;
-  while(prev.length > 1){
-    const rnd = [];
-    for(let i=0;i<prev.length;i+=2){
-      const m={id:'p'+(pid++), j1:null, j2:null, score1:null, score2:null, ganador:null, ronda:`Ronda ${bracket.length+1}`};
-      rnd.push(m); partidos.push(m);
+  // Rondas siguientes vacías
+  let ri=1;
+  while(rondaActual.length>1){
+    const siguiente=[];
+    for(let i=0;i<rondaActual.length;i+=2){
+      const m={id:'p'+(pid++),j1:null,j2:null,score1:null,score2:null,ganador:null,rondaIdx:ri,ordenEnRonda:Math.floor(i/2)};
+      siguiente.push(m);partidos.push(m);
     }
-    bracket.push(rnd);
-    prev = rnd;
+    rondaActual=siguiente;ri++;
   }
-  return {bracket, partidos};
+  return {bracket:null,partidos};
 }
 
 function crearGrupos(js, pg){
@@ -619,12 +614,12 @@ window.guardarResultado = async function(pid){
     return {...p, score1:s1, score2:s2, ganador};
   });
   // Si es eliminación, avanzar ganador
-  let bracket = bracketFromFirestore(torneoActual?.bracket);
-  if(t.formato==='eliminacion' && bracket){
-    bracket = avanzarBracket(bracket, partidos);
+  let partidos2 = [...partidos];
+  if(t.formato==='eliminacion'){
+    avanzarBracket(null, partidos2);
   }
-  await updateDoc(doc(db,'torneos',t.id),{partidos,...(bracket?{bracket: bracketToFirestore(bracket)}:{})});
-  torneoActual = {...t, partidos, bracket};
+  await updateDoc(doc(db,'torneos',t.id),{partidos:partidos2});
+  torneoActual = {...t, partidos:partidos2};
   loadPartidos();
 };
 
@@ -635,23 +630,22 @@ window.resetPartido = async function(pid){
 };
 
 function avanzarBracket(bracket, partidos){
-  // Para cada ronda, el ganador avanza al siguiente partido
-  for(let ri=0;ri<bracket.length-1;ri++){
-    const ronda=bracket[ri];
-    for(let mi=0;mi<ronda.length;mi+=2){
-      const m1=partidos.find(p=>p.id===ronda[mi]?.id);
-      const m2=partidos.find(p=>p.id===ronda[mi+1]?.id);
-      const nextMatch=bracket[ri+1]?.[Math.floor(mi/2)];
-      if(nextMatch){
-        const idx=partidos.findIndex(p=>p.id===nextMatch.id);
+  // Con la nueva estructura plana, avanzar ganadores por rondaIdx
+  const maxRonda = Math.max(...partidos.map(p=>p.rondaIdx||0));
+  for(let ri=0; ri<maxRonda; ri++){
+    const rondaActual = partidos.filter(p=>p.rondaIdx===ri).sort((a,b)=>(a.ordenEnRonda||0)-(b.ordenEnRonda||0));
+    for(let i=0; i<rondaActual.length; i+=2){
+      const m1=rondaActual[i], m2=rondaActual[i+1];
+      const siguiente=partidos.find(p=>p.rondaIdx===ri+1&&p.ordenEnRonda===Math.floor(i/2));
+      if(siguiente){
+        const idx=partidos.findIndex(p=>p.id===siguiente.id);
         if(idx>=0){
-          partidos[idx]={...partidos[idx],j1:m1?.ganador||null,j2:m2?.ganador||null};
-          bracket[ri+1][Math.floor(mi/2)]=partidos[idx];
+          partidos[idx]={...partidos[idx], j1:m1?.ganador||null, j2:m2?.ganador||null};
         }
       }
     }
   }
-  return bracket;
+  return null; // bracket ya no se usa como estructura separada
 }
 
 // ── CAMPEÓN ────────────────────────────────────────────────
