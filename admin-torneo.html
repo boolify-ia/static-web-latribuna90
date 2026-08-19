@@ -189,7 +189,17 @@
       </div>
     </div>
 
+  <!-- MODAL DESEMPATE -->
+<div id="modal-desempate" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.7);z-index:999;display:none;align-items:center;justify-content:center;padding:1rem">
+  <div style="background:#2a100c;border:1px solid var(--gold);border-radius:1rem;padding:2rem;max-width:380px;width:100%;text-align:center">
+    <div style="font-size:2.5rem;margin-bottom:.5rem">⚖️</div>
+    <h3 style="font-family:var(--S);font-size:1.1rem;color:var(--gold);text-transform:uppercase;letter-spacing:.08em;margin-bottom:.5rem">Empate total</h3>
+    <p style="color:var(--muted);font-size:.85rem;margin-bottom:1.25rem" id="modal-desc">Los jugadores empataron en todo. Define quién avanza:</p>
+    <div style="display:flex;flex-direction:column;gap:.6rem" id="modal-btns"></div>
+    <button class="btn btn-outline" style="width:100%;margin-top:.75rem" onclick="cerrarModalDesempate()">Cancelar</button>
   </div>
+</div>
+</div>
 </div>
 
 <script type="module">
@@ -446,7 +456,7 @@ window.generarFixture = async function(){
   const n = js.length;
 
   if(t.formato==='eliminacion'){
-    const r = generarEliminacion(shuffled, t.idaVuelta !== false);
+    const r = generarEliminacion(shuffled);
     bracket = r.bracket; partidos = r.partidos;
   } else if(t.formato==='grupos'){
     const { gruposArr, pg } = calcGruposOptimos(shuffled);
@@ -635,19 +645,82 @@ window.guardarResultado = async function(pid){
   const s1 = parseInt(document.getElementById(`s1-${pid}`)?.value);
   const s2 = parseInt(document.getElementById(`s2-${pid}`)?.value);
   if(isNaN(s1)||isNaN(s2)){ alert('Ingresa ambos resultados'); return; }
-  const partidos = t.partidos.map(p=>{
-    if(p.id!==pid) return p;
-    const ganador = s1>s2?p.j1:s2>s1?p.j2:null;
-    return {...p, score1:s1, score2:s2, ganador};
-  });
-  // Si es eliminación, avanzar ganador
-  let partidos2 = [...partidos];
-  if(t.formato==='eliminacion'){
-    avanzarBracket(null, partidos2);
+
+  const p = t.partidos.find(x => x.id === pid);
+
+  // Si es vuelta de ida/vuelta, calcular marcador acumulado
+  if(p.esVuelta){
+    const ida = t.partidos.find(x => x.esIda && x.ordenEnRonda === p.ordenEnRonda && x.rondaIdx === p.rondaIdx);
+    if(ida && ida.score1 != null){
+      // j1 del ida acumula: goles_ida + goles_como_visitante_en_vuelta
+      const acumJ1 = (ida.score1||0) + s2;
+      const acumJ2 = (ida.score2||0) + s1;
+      const partidos = t.partidos.map(x => x.id === pid ? {...x, score1:s1, score2:s2} : x);
+      if(acumJ1 === acumJ2){
+        // Empate total → mostrar modal
+        torneoActual = {...t, partidos};
+        mostrarModalDesempate(pid, ida.j1, ida.j2, `Marcador acumulado ${acumJ1}-${acumJ2}. Define quién avanza:`);
+        return;
+      }
+      const ganador = acumJ1 > acumJ2 ? ida.j1 : ida.j2;
+      await finalizarPartido(pid, s1, s2, ganador, partidos);
+      return;
+    }
   }
+
+  const partidos = t.partidos.map(x => x.id === pid ? {...x, score1:s1, score2:s2} : x);
+
+  if(s1 === s2){
+    // Empate en partido simple → mostrar modal de desempate
+    torneoActual = {...t, partidos};
+    mostrarModalDesempate(pid, p.j1, p.j2, `Empate ${s1}-${s2}. Define quién avanza:`);
+    return;
+  }
+
+  const ganador = s1 > s2 ? p.j1 : p.j2;
+  await finalizarPartido(pid, s1, s2, ganador, partidos);
+};
+
+async function finalizarPartido(pid, s1, s2, ganador, partidos){
+  const t = torneoActual;
+  const partidosActualizados = partidos.map(x => x.id === pid ? {...x, ganador} : x);
+  let partidos2 = [...partidosActualizados];
+  if(t.formato==='eliminacion') avanzarBracket(null, partidos2);
   await updateDoc(doc(db,'torneos',t.id),{partidos:partidos2});
   torneoActual = {...t, partidos:partidos2};
   loadPartidos();
+}
+
+function mostrarModalDesempate(pid, j1id, j2id, desc){
+  const t = torneoActual;
+  const j1 = t.jugadores?.find(j=>j.id===j1id);
+  const j2 = t.jugadores?.find(j=>j.id===j2id);
+  document.getElementById('modal-desc').textContent = desc;
+  document.getElementById('modal-btns').innerHTML = `
+    <button class="btn btn-gold" onclick="definirGanador('${pid}','${j1id}')">
+      <i class="fas fa-trophy"></i> Avanza: ${j1?.nombre||j1id}
+    </button>
+    <button class="btn btn-gold" onclick="definirGanador('${pid}','${j2id}')">
+      <i class="fas fa-trophy"></i> Avanza: ${j2?.nombre||j2id}
+    </button>`;
+  const modal = document.getElementById('modal-desempate');
+  modal.style.display = 'flex';
+}
+
+window.definirGanador = async function(pid, ganadorId){
+  const t = torneoActual;
+  const p = t.partidos.find(x => x.id === pid);
+  const partidos = t.partidos.map(x => x.id === pid ? {...x, ganador: ganadorId} : x);
+  let partidos2 = [...partidos];
+  if(t.formato==='eliminacion') avanzarBracket(null, partidos2);
+  await updateDoc(doc(db,'torneos',t.id),{partidos:partidos2});
+  torneoActual = {...t, partidos:partidos2};
+  cerrarModalDesempate();
+  loadPartidos();
+};
+
+window.cerrarModalDesempate = function(){
+  document.getElementById('modal-desempate').style.display = 'none';
 };
 
 window.toggleIdaVuelta = async function(pid){
