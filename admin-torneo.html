@@ -643,6 +643,7 @@ window.loadPartidos = function(){
     const partidosGrupo = partidos.filter(p => p.grupo != null);
     const todosJugados = partidosGrupo.length > 0 && partidosGrupo.every(p => p.score1 != null);
     const yaHayElim = partidos.some(p => p.rondaIdx != null);
+    console.log('Grupos check:', { total: partidosGrupo.length, jugados: partidosGrupo.filter(p=>p.score1!=null).length, todosJugados, yaHayElim });
     btnFaseElim.style.display = (todosJugados && !yaHayElim) ? 'inline-flex' : 'none';
   } else if(btnFaseElim){
     btnFaseElim.style.display = 'none';
