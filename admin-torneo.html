@@ -462,7 +462,8 @@ window.generarFixture = async function(){
   }
 
   await updateDoc(doc(db,'torneos',t.id),{
-    partidos, ...(grupos?{grupos}:{})
+    partidos,
+    ...(grupos ? { grupos: Object.fromEntries(grupos.map((g,i)=>[`g${i}`,g])) } : {})
   });
   torneoActual = {...torneoActual, partidos, grupos};
   loadPartidos();

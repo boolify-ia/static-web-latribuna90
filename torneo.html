@@ -282,9 +282,14 @@ function renderBracket(t){
 
 // ── GRUPOS ─────────────────────────────────────────────────
 function renderGrupos(t){
-  if(!t.grupos||!t.grupos.length) return '<div class="empty">Los grupos aún no han sido generados</div>';
+  // Convertir grupos de objeto {g0:[],g1:[]} a array [[],[]]
+  let grupos = t.grupos;
+  if(grupos && !Array.isArray(grupos)){
+    grupos = Object.keys(grupos).sort((a,b)=>parseInt(a.slice(1))-parseInt(b.slice(1))).map(k=>grupos[k]);
+  }
+  if(!grupos||!grupos.length) return '<div class="empty">Los grupos aún no han sido generados</div>';
   let html = '<div class="groups-grid">';
-  t.grupos.forEach((g,gi)=>{
+  grupos.forEach((g,gi)=>{
     const letra = String.fromCharCode(65+gi);
     // Calcular tabla
     const tabla = calcTablaGrupo(g, t);
