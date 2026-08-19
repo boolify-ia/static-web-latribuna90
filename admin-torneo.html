@@ -165,7 +165,10 @@
         <!-- GENERAR FIXTURE -->
         <div class="card-header"><h2>⚙️ Generar Fixture</h2></div>
         <p style="color:var(--muted);font-size:.82rem;margin-bottom:.75rem">Una vez que tengas todos los jugadores registrados, genera el fixture. Esto crea todos los partidos y llaves automáticamente.</p>
-        <button class="btn btn-gold" onclick="generarFixture()"><i class="fas fa-random"></i> Generar Fixture Automático</button>
+        <div style="display:flex;gap:.75rem;flex-wrap:wrap">
+          <button class="btn btn-gold" onclick="generarFixture()"><i class="fas fa-random"></i> Generar Fixture Automático</button>
+          <button class="btn btn-outline" id="btn-fase-elim" style="display:none" onclick="generarFaseEliminatoria()"><i class="fas fa-trophy"></i> Generar Fase Eliminatoria</button>
+        </div>
         <p class="msg" id="fixture-msg" style="display:none;margin-top:.5rem"></p>
       </div>
 
@@ -478,7 +481,55 @@ window.generarFixture = async function(){
   showMsg(msg,'ok',`✅ Fixture generado: ${partidos.length} partidos`);
 };
 
-function calcGruposOptimos(js){
+window.generarFaseEliminatoria = async function(){
+  const t = torneoActual;
+  const msg = document.getElementById('fixture-msg');
+  if(!t || t.formato !== 'grupos'){ showMsg(msg,'err','Solo disponible en formato grupos'); return; }
+
+  // Reconstruir grupos desde Firestore (objeto → array)
+  let grupos = t.grupos;
+  if(grupos && !Array.isArray(grupos)){
+    grupos = Object.keys(grupos).sort((a,b)=>parseInt(a.slice(1))-parseInt(b.slice(1))).map(k=>grupos[k]);
+  }
+  if(!grupos?.length){ showMsg(msg,'err','No hay grupos definidos'); return; }
+
+  // Calcular tabla de cada grupo y obtener clasificados
+  const clasificados = [];
+  grupos.forEach((g, gi) => {
+    const tabla = calcTablaGrupo(g, t.partidos||[]);
+    const nClasif = t.clasificadosPorGrupo || 2;
+    tabla.slice(0, nClasif).forEach(row => clasificados.push(row.id));
+  });
+
+  if(clasificados.length < 2){ showMsg(msg,'err','No hay suficientes clasificados'); return; }
+
+  // Generar bracket de eliminación con los clasificados
+  // Convertir IDs a objetos jugador
+  const jugClasif = clasificados.map(id => t.jugadores.find(j => j.id === id)).filter(Boolean);
+  const { partidos: partidosElim } = generarEliminacion(shuffle(jugClasif));
+
+  // Agregar los nuevos partidos al array existente (mantener los de grupos)
+  const todosPartidos = [...(t.partidos||[]), ...partidosElim];
+
+  await updateDoc(doc(db,'torneos',t.id),{ partidos: todosPartidos });
+  torneoActual = {...t, partidos: todosPartidos};
+  loadPartidos();
+  showMsg(msg,'ok',`✅ Fase eliminatoria generada con ${jugClasif.length} clasificados`);
+};
+
+function calcTablaGrupo(g, partidos){
+  const rows = {};
+  g.forEach(id => { rows[id] = {id, pj:0, g:0, p:0, e:0, gf:0, gc:0, pts:0}; });
+  partidos.filter(p => p.grupo != null && g.includes(p.j1) && g.includes(p.j2) && p.score1 != null).forEach(p => {
+    const r1=rows[p.j1], r2=rows[p.j2];
+    if(!r1||!r2) return;
+    r1.pj++;r2.pj++;r1.gf+=p.score1;r1.gc+=p.score2;r2.gf+=p.score2;r2.gc+=p.score1;
+    if(p.score1>p.score2){r1.g++;r1.pts+=3;r2.p++;}
+    else if(p.score2>p.score1){r2.g++;r2.pts+=3;r1.p++;}
+    else{r1.e++;r2.e++;r1.pts++;r2.pts++;}
+  });
+  return Object.values(rows).sort((a,b)=>b.pts-a.pts||(b.gf-b.gc)-(a.gf-a.gc)||b.gf-a.gf);
+}
   const n = js.length;
   // Reglas: grupos de 3 o 4, intentar que queden uniformes
   // y que el número de clasificados sea potencia de 2
@@ -583,7 +634,20 @@ function generarLiga(js){
 // ── RESULTADOS ─────────────────────────────────────────────
 window.loadPartidos = function(){
   const el = document.getElementById('partidos-list');
-  const partidos = torneoActual?.partidos||[];
+  const t = torneoActual;
+  const partidos = t?.partidos||[];
+
+  // Mostrar botón de fase eliminatoria si: formato grupos, todos los partidos de grupo jugados, y no hay partidos de eliminación aún
+  const btnFaseElim = document.getElementById('btn-fase-elim');
+  if(t?.formato === 'grupos' && btnFaseElim){
+    const partidosGrupo = partidos.filter(p => p.grupo != null);
+    const todosJugados = partidosGrupo.length > 0 && partidosGrupo.every(p => p.score1 != null);
+    const yaHayElim = partidos.some(p => p.rondaIdx != null);
+    btnFaseElim.style.display = (todosJugados && !yaHayElim) ? 'inline-flex' : 'none';
+  } else if(btnFaseElim){
+    btnFaseElim.style.display = 'none';
+  }
+
   if(!partidos.length){ el.innerHTML='<div style="color:var(--muted);font-size:.85rem;padding:.4rem">Genera el fixture primero</div>'; return; }
   const pendientes = partidos.filter(p=>p.score1==null);
   const jugados = partidos.filter(p=>p.score1!=null);
