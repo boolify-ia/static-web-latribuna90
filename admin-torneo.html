@@ -449,22 +449,20 @@ window.generarFixture = async function(){
     const r = generarEliminacion(shuffled);
     bracket = r.bracket; partidos = r.partidos;
   } else if(t.formato==='grupos'){
-    // Calcular tamaño óptimo de grupos automáticamente
-    const { gruposArr, pg, clasif } = calcGruposOptimos(shuffled);
-    grupos = gruposArr.map(g=>g.map(j=>j.id));
+    const { gruposArr, pg } = calcGruposOptimos(shuffled);
+    // Convertir grupos a objeto plano para Firestore {g0:[id1,id2], g1:[id3,id4]}
+    const gruposObj = {};
+    gruposArr.forEach((g,i) => { gruposObj[`g${i}`] = g.map(j=>j.id); });
+    grupos = gruposObj;
     partidos = generarPartidosGrupos(gruposArr);
-    // Guardar configuración calculada
-    await updateDoc(doc(db,'torneos',t.id),{ porGrupo: pg, clasificadosPorGrupo: 2 });
-    torneoActual.porGrupo = pg;
-    torneoActual.clasificadosPorGrupo = 2;
   } else if(t.formato==='liga'){
     partidos = generarLiga(shuffled);
   }
 
-  await updateDoc(doc(db,'torneos',t.id),{
-    partidos,
-    ...(grupos ? { grupos: Object.fromEntries(grupos.map((g,i)=>[`g${i}`,g])) } : {})
-  });
+  // Verificar que no haya arrays anidados antes de guardar
+  const payload = { partidos, ...(grupos ? { grupos } : {}) };
+  console.log('Guardando fixture:', JSON.stringify(payload).slice(0, 500));
+  await updateDoc(doc(db,'torneos',t.id), payload);
   torneoActual = {...torneoActual, partidos, grupos};
   loadPartidos();
   showMsg(msg,'ok',`✅ Fixture generado: ${partidos.length} partidos`);
