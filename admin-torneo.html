@@ -649,19 +649,11 @@ window.guardarResultado = async function(pid){
   const p = t.partidos.find(x => x.id === pid);
   let partidos = t.partidos.map(x => x.id === pid ? {...x, score1:s1, score2:s2} : x);
 
-  // ── PARTIDO DE IDA: guardar sin definir ganador, esperar vuelta ──
-  if(p.esIda){
-    await updateDoc(doc(db,'torneos',t.id),{partidos});
-    torneoActual = {...t, partidos};
-    loadPartidos();
-    return;
-  }
-
   // ── PARTIDO DE VUELTA: calcular marcador acumulado ──
   if(p.esVuelta){
     const ida = t.partidos.find(x => x.esIda && x.ordenEnRonda === p.ordenEnRonda && x.rondaIdx === p.rondaIdx);
     if(ida?.score1 != null){
-      const acumJ1 = (ida.score1||0) + s2; // j1 del ida acumula goles en ida + goles recibidos en vuelta (como visitante)
+      const acumJ1 = (ida.score1||0) + s2;
       const acumJ2 = (ida.score2||0) + s1;
       if(acumJ1 === acumJ2){
         torneoActual = {...t, partidos};
@@ -672,6 +664,15 @@ window.guardarResultado = async function(pid){
       await finalizarPartido(pid, s1, s2, ganador, partidos);
       return;
     }
+  }
+
+  // ── PARTIDO DE IDA: existe una vuelta asociada → guardar sin definir ganador ──
+  const tieneVuelta = t.partidos.some(x => x.esVuelta && x.ordenEnRonda === p.ordenEnRonda && x.rondaIdx === p.rondaIdx);
+  if(p.esIda || tieneVuelta){
+    await updateDoc(doc(db,'torneos',t.id),{partidos});
+    torneoActual = {...t, partidos};
+    loadPartidos();
+    return;
   }
 
   // ── PARTIDO SIMPLE: empate → modal ──
