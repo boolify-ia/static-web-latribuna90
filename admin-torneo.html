@@ -481,12 +481,56 @@ function generarElim(js){
 }
 
 function generarGrupos(gruposArr){
-  const partidos=[];let pid=0;
-  gruposArr.forEach((g,gi)=>{
-    for(let i=0;i<g.length;i++) for(let j=i+1;j<g.length;j++)
-      partidos.push({id:'p'+(pid++),j1:g[i].id,j2:g[j].id,score1:null,score2:null,ganador:null,grupo:gi});
+  // Generar todos los partidos por grupo
+  const porGrupo = gruposArr.map((g, gi) => {
+    const ps = [];
+    for(let i=0; i<g.length; i++)
+      for(let j=i+1; j<g.length; j++)
+        ps.push({j1:g[i].id, j2:g[j].id, grupo:gi});
+    return ps;
   });
-  return partidos;
+
+  // Intercalar: tomar un partido de cada grupo en rotación
+  // Dentro de cada grupo, ordenar para que cada jugador descanse entre partidos
+  const ordenados = porGrupo.map(ps => ordenarConDescanso(ps));
+  const intercalados = [];
+  const indices = ordenados.map(()=>0);
+  let quedan = true;
+  while(quedan){
+    quedan = false;
+    ordenados.forEach((ps, gi) => {
+      if(indices[gi] < ps.length){
+        intercalados.push(ps[indices[gi]++]);
+        quedan = true;
+      }
+    });
+  }
+
+  // Asignar IDs finales
+  return intercalados.map((p, i) => ({
+    id: 'p'+i,
+    j1: p.j1, j2: p.j2,
+    score1: null, score2: null, ganador: null,
+    grupo: p.grupo
+  }));
+}
+
+function ordenarConDescanso(partidos){
+  // Ordenar partidos de un grupo para que ningún jugador juegue dos seguidos
+  const result = [];
+  const pendientes = [...partidos];
+  let ultimosJugadores = new Set();
+
+  while(pendientes.length){
+    // Buscar un partido donde ninguno de los dos jugó en el anterior
+    let idx = pendientes.findIndex(p => !ultimosJugadores.has(p.j1) && !ultimosJugadores.has(p.j2));
+    // Si no hay ninguno sin conflicto, tomar el primero disponible
+    if(idx === -1) idx = 0;
+    const [partido] = pendientes.splice(idx, 1);
+    result.push(partido);
+    ultimosJugadores = new Set([partido.j1, partido.j2]);
+  }
+  return result;
 }
 
 function generarLiga(js){
