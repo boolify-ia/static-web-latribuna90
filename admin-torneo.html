@@ -664,6 +664,21 @@ window.setCampeon = async function(){
 };
 
 // ── DELETE ─────────────────────────────────────────────────
+window.repairBracket = async function(id){
+  const snap = await getDoc(doc(db,'torneos',id||torneoActual?.id));
+  if(!snap.exists()){ alert('Torneo no encontrado'); return; }
+  const t = snap.data();
+  let bracket = t.bracket;
+  if(!bracket){ alert('Este torneo no tiene bracket'); return; }
+  // Si ya es objeto con claves r0,r1... está bien
+  if(!Array.isArray(bracket)){ alert('El bracket ya está en formato correcto'); return; }
+  // Convertir array de arrays a objeto
+  const fixed = {};
+  bracket.forEach((ronda,i) => { fixed[`r${i}`] = ronda; });
+  await updateDoc(doc(db,'torneos',snap.id),{ bracket: fixed });
+  alert('✅ Bracket reparado. Recarga la página.');
+};
+
 window.deleteTorneo = async function(id){
   if(!confirm('¿Eliminar este torneo? Esta acción no se puede deshacer.')) return;
   await deleteDoc(doc(db,'torneos',id));
