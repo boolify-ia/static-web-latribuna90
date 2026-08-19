@@ -122,13 +122,6 @@
             <option value="liga">Todos contra todos (Liga)</option>
           </select>
         </div>
-        <div class="field" style="justify-content:flex-end;padding-bottom:.2rem">
-          <label>&nbsp;</label>
-          <label style="display:flex;align-items:center;gap:.6rem;cursor:pointer;background:rgba(255,255,255,.04);border:1px solid rgba(212,175,55,.25);border-radius:.6rem;padding:.7rem .9rem">
-            <input type="checkbox" id="t-idavuelta" style="width:18px;height:18px;accent-color:var(--gold);cursor:pointer">
-            <span style="font-family:var(--S);font-size:.85rem;color:var(--cream)">Primera ronda: ida y vuelta</span>
-          </label>
-        </div>
       </div>
       <div id="formato-opts" class="row" style="margin-bottom:.75rem"></div>
       <button class="btn btn-gold" onclick="crearTorneo()"><i class="fas fa-plus"></i> Crear Torneo</button>
@@ -311,8 +304,7 @@ window.crearTorneo = async function(){
   const nEsperados = parseInt(document.getElementById('t-njugadores').value) || 0;
   const msg = document.getElementById('create-msg');
   if(!nombre){ showMsg(msg,'err','Ingresa un nombre para el torneo'); return; }
-  const idaVuelta = document.getElementById('t-idavuelta').checked;
-  const data = { nombre, formato, estado:'pendiente', jugadores:[], partidos:[], nEsperados, idaVuelta, createdAt:serverTimestamp() };
+  const data = { nombre, formato, estado:'pendiente', jugadores:[], partidos:[], nEsperados, createdAt:serverTimestamp() };
   if(formato==='grupos'){
     // Calcular automáticamente: grupos de 4 si n<=16, de 3 si n<=9, de 4-5 si más
     const n = nEsperados || 8;
@@ -514,54 +506,38 @@ function bracketFromFirestore(obj){
   return Object.keys(obj).sort((a,b)=>parseInt(a.slice(1))-parseInt(b.slice(1))).map(k=>obj[k]);
 }
 
-function generarEliminacion(js, idaVuelta = true){
+function generarEliminacion(js){
   const n = js.length;
-
-  // Potencia de 2 <= n para los clasificados (ronda 2 en adelante)
   let clasif = 1; while(clasif * 2 <= n) clasif *= 2;
   const nPares = n - clasif;
   const nJueganR1 = nPares * 2;
-  const nByes = clasif - nPares;
 
-  const shuffled = [...js];
-  const jugadoresR1 = shuffled.slice(0, nJueganR1);
-  const byeJugadores = shuffled.slice(nJueganR1);
-
+  const jugadoresR1 = js.slice(0, nJueganR1);
+  const byeJugadores = js.slice(nJueganR1);
   const partidos = [];
   let pid = 0;
 
-  // ── RONDA 1 ────────────────────────────────────────────
+  // R1: partido simple (el admin puede convertir a ida/vuelta después)
   for(let i = 0; i < nJueganR1; i += 2){
     const j1 = jugadoresR1[i], j2 = jugadoresR1[i+1];
     const orden = Math.floor(i / 2);
-    if(idaVuelta){
-      // Ida
-      partidos.push({ id:'p'+(pid++), j1:j1.id, j2:j2.id, score1:null, score2:null, ganador:null, rondaIdx:0, ordenEnRonda:orden, esIda:true });
-      // Vuelta
-      partidos.push({ id:'p'+(pid++), j1:j2.id, j2:j1.id, score1:null, score2:null, ganador:null, rondaIdx:0, ordenEnRonda:orden, esVuelta:true });
-    } else {
-      // Solo un partido
-      partidos.push({ id:'p'+(pid++), j1:j1.id, j2:j2.id, score1:null, score2:null, ganador:null, rondaIdx:0, ordenEnRonda:orden });
-    }
+    partidos.push({ id:'p'+(pid++), j1:j1.id, j2:j2.id, score1:null, score2:null, ganador:null, rondaIdx:0, ordenEnRonda:orden });
   }
 
-  // ── RONDAS SIGUIENTES ──────────────────────────────────
-  let rondaSize = clasif;
-  let ri = 1;
+  // Rondas siguientes
+  let rondaSize = clasif, ri = 1;
   while(rondaSize >= 2){
     for(let i = 0; i < rondaSize; i += 2){
       const orden = Math.floor(i / 2);
       let j1id = null, j2id = null;
       if(ri === 1){
-        if(i >= nPares) j1id = byeJugadores[i - nPares]?.id || null;
+        if(i >= nPares)   j1id = byeJugadores[i - nPares]?.id || null;
         if((i+1) >= nPares) j2id = byeJugadores[(i+1) - nPares]?.id || null;
       }
       partidos.push({ id:'p'+(pid++), j1:j1id, j2:j2id, score1:null, score2:null, ganador:null, rondaIdx:ri, ordenEnRonda:orden });
     }
-    rondaSize = rondaSize / 2;
-    ri++;
+    rondaSize = rondaSize / 2; ri++;
   }
-
   return { bracket: null, partidos };
 }
 
@@ -642,12 +618,14 @@ function partidoRow(p, readonly=false){
   return `<div class="partido-row" id="row-${p.id}">
     <div class="names" style="font-size:.82rem">
       ${j1?.nombre||'<em style="color:var(--muted);font-size:.75rem">Por definir</em>'} vs ${j2?.nombre||'<em style="color:var(--muted);font-size:.75rem">Por definir</em>'}
-      <br><span style="font-size:.68rem;color:var(--muted)">${etapa}</span>
+      <br><span style="font-size:.68rem;color:var(--muted)">${etapa}${p.esIda?' · Ida':p.esVuelta?' · Vuelta':''}</span>
+      ${p.idaVuelta?'<br><span style="font-size:.65rem;color:#81c784">↔ Ida y vuelta activo</span>':''}
     </div>
     <input class="score-input" type="number" id="s1-${p.id}" placeholder="0" min="0" max="99" ${sinJugadores?'disabled':''}>
     <span class="vs">–</span>
     <input class="score-input" type="number" id="s2-${p.id}" placeholder="0" min="0" max="99" ${sinJugadores?'disabled':''}>
     <button class="btn btn-green btn-xs" onclick="guardarResultado('${p.id}')" ${sinJugadores?'disabled':''}><i class="fas fa-check"></i></button>
+    ${!sinJugadores && !p.esIda && !p.esVuelta ? `<button class="btn btn-xs ${p.idaVuelta?'btn-gold':'btn-outline'}" onclick="toggleIdaVuelta('${p.id}')" title="${p.idaVuelta?'Quitar ida/vuelta':'Convertir a ida y vuelta'}">↔</button>` : ''}
     ${sinJugadores?'<span style="font-size:.7rem;color:var(--muted);font-style:italic">Espera resultados anteriores</span>':''}
   </div>`;
 }
@@ -669,6 +647,37 @@ window.guardarResultado = async function(pid){
   }
   await updateDoc(doc(db,'torneos',t.id),{partidos:partidos2});
   torneoActual = {...t, partidos:partidos2};
+  loadPartidos();
+};
+
+window.toggleIdaVuelta = async function(pid){
+  const t = torneoActual;
+  const p = t.partidos.find(x => x.id === pid);
+  if(!p) return;
+
+  let partidos;
+  if(p.idaVuelta){
+    // Desactivar: quitar la vuelta y el flag
+    partidos = t.partidos
+      .filter(x => !(x.esVuelta && x.ordenEnRonda === p.ordenEnRonda && x.rondaIdx === p.rondaIdx))
+      .map(x => x.id === pid ? {...x, idaVuelta:false} : x);
+  } else {
+    // Activar: marcar este como ida y crear partido de vuelta
+    const pid2 = 'p-vuelta-' + Date.now();
+    const vuelta = {
+      id: pid2, j1: p.j2, j2: p.j1,
+      score1: null, score2: null, ganador: null,
+      rondaIdx: p.rondaIdx, ordenEnRonda: p.ordenEnRonda,
+      esVuelta: true
+    };
+    partidos = t.partidos.map(x => x.id === pid ? {...x, idaVuelta:true, esIda:true} : x);
+    // Insertar la vuelta justo después del partido de ida
+    const idx = partidos.findIndex(x => x.id === pid);
+    partidos.splice(idx + 1, 0, vuelta);
+  }
+
+  await updateDoc(doc(db,'torneos',t.id), { partidos });
+  torneoActual = {...t, partidos};
   loadPartidos();
 };
 
