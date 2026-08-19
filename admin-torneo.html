@@ -81,8 +81,8 @@
 <div id="login">
   <div style="font-size:2.5rem">🎮</div>
   <h2>Admin Torneos<br>La Tribuna 90</h2>
-  <div class="field"><label>Contraseña</label><input type="password" id="pass" onkeydown="if(event.key==='Enter')window.login()"></div>
-  <button class="btn btn-gold" onclick="window.login()" style="width:100%"><i class="fas fa-lock-open"></i> Entrar</button>
+  <div class="field"><label>Contraseña</label><input type="password" id="pass" onkeydown="if(event.key==='Enter')login()"></div>
+  <button class="btn btn-gold" onclick="login()" style="width:100%"><i class="fas fa-lock-open"></i> Entrar</button>
   <p id="login-err" style="color:var(--red);font-size:.82rem;text-align:center;min-height:1rem"></p>
 </div>
 
@@ -205,6 +205,22 @@
 </div>
 </div>
 
+<script>
+// Login no puede estar en type="module" porque se llama desde onclick antes de que el módulo cargue
+const ADMIN_PASS = 'tribuna2025$';
+function login(){
+  if(document.getElementById('pass').value === ADMIN_PASS){
+    document.getElementById('login').style.display='none';
+    document.getElementById('panel').style.display='block';
+    // Notificar al módulo que el login fue exitoso
+    window._adminLoggedIn = true;
+    document.dispatchEvent(new Event('admin-login'));
+  } else {
+    document.getElementById('login-err').textContent='Contraseña incorrecta';
+  }
+}
+</script>
+
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getFirestore, doc, getDoc, setDoc, updateDoc, addDoc, getDocs, deleteDoc, collection, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
@@ -290,20 +306,13 @@ window.aplicarFormato = function(key){
     el.style.border = isThis?'1px solid var(--gold)':'1px solid rgba(255,255,255,.1)';
   });
 };
-const PASS = 'tribuna2025$';
 let torneoActual = null;
 
-// ── LOGIN ──────────────────────────────────────────────────
-window.login = function(){
-  if(document.getElementById('pass').value === PASS){
-    document.getElementById('login').style.display='none';
-    document.getElementById('panel').style.display='block';
-    updateFormatoOptions();
-    loadTorneos();
-  } else {
-    document.getElementById('login-err').textContent='Contraseña incorrecta';
-  }
-};
+// ── LOGIN: escuchar evento del script externo ──────────────
+document.addEventListener('admin-login', () => {
+  updateFormatoOptions();
+  loadTorneos();
+});
 
 // ── FORMATO OPTIONS ────────────────────────────────────────
 window.updateFormatoOptions = function(){
