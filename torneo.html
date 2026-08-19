@@ -398,13 +398,13 @@ function partidoCard(p, t, jugado){
   return `<div class="partido-card ${jugado?'jugado':''}">
     <div class="partido-player">
       ${avatar(j1,36)}
-      <span style="font-family:var(--S);font-weight:${win1?'700':'400'};color:${win1?'#81c784':'inherit'}">${j1?.nombre||'Por definir'}</span>
+      <span style="font-family:var(--S);font-weight:${win1?'700':'600'};color:${win1?'#81c784':'var(--cream)'}">${j1?.nombre||'Por definir'}</span>
     </div>
     ${jugado
       ? `<div class="partido-score">${p.score1} <span style="color:var(--muted);font-size:1.2rem">-</span> ${p.score2}</div>`
       : `<div class="partido-score pending">vs</div>`}
     <div class="partido-player right">
-      <span style="font-family:var(--S);font-weight:${win2?'700':'400'};color:${win2?'#81c784':'inherit'}">${j2?.nombre||'Por definir'}</span>
+      <span style="font-family:var(--S);font-weight:${win2?'700':'600'};color:${win2?'#81c784':'var(--cream)'}">${j2?.nombre||'Por definir'}</span>
       ${avatar(j2,36)}
     </div>
     <div class="partido-meta">${etapa}</div>
