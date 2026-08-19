@@ -296,7 +296,7 @@ function renderGrupos(t){
     html += `<div class="group-card">
       <div class="group-header">Grupo ${letra}</div>
       <table class="group-table">
-        <thead><tr><th>Jugador</th><th class="num">PJ</th><th class="num">G</th><th class="num">P</th><th class="num">GF</th><th class="num">GC</th><th class="num">Pts</th></tr></thead>
+        <thead><tr><th>Jugador</th><th class="num">PJ</th><th class="num">G</th><th class="num">P</th><th class="num">GF</th><th class="num">GC</th><th class="num">DG</th><th class="num">Pts</th></tr></thead>
         <tbody>`;
     tabla.forEach((row,ri)=>{
       const j = t.jugadores?.find(j=>j.id===row.id);
@@ -304,7 +304,9 @@ function renderGrupos(t){
       html += `<tr class="${clasif?'clasificado':''}">
         <td><div class="player-row">${avatarSm(j)}<span>${j?.nombre||row.id}</span></div></td>
         <td class="num">${row.pj}</td><td class="num">${row.g}</td><td class="num">${row.p}</td>
-        <td class="num">${row.gf}</td><td class="num">${row.gc}</td><td class="num" style="color:var(--gold);font-family:var(--T);font-size:1rem">${row.pts}</td>
+        <td class="num">${row.gf}</td><td class="num">${row.gc}</td>
+        <td class="num" style="color:${row.gf-row.gc>0?'#81c784':row.gf-row.gc<0?'#ef9a9a':'inherit'}">${row.gf-row.gc>0?'+':''}${row.gf-row.gc}</td>
+        <td class="num" style="color:var(--gold);font-family:var(--T);font-size:1rem">${row.pts}</td>
       </tr>`;
     });
     html += '</tbody></table>';

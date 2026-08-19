@@ -582,10 +582,22 @@ window.loadPartidos = function(){
   el.innerHTML=html;
 };
 
+function getRondaNombre(p, totalRondas){
+  if(p.grupo!=null) return `Grupo ${String.fromCharCode(65+p.grupo)}`;
+  if(p.rondaIdx!=null){
+    const rondas = {0:'Final',1:'Semifinal',2:'Cuartos de Final',3:'Octavos de Final'};
+    const desdeFinale = (totalRondas||4) - 1 - p.rondaIdx;
+    return rondas[desdeFinale] || `Ronda ${p.rondaIdx+1}`;
+  }
+  return p.ronda||'Partido';
+}
+
 function partidoRow(p, readonly=false){
   const t=torneoActual;
   const j1=t.jugadores?.find(j=>j.id===p.j1), j2=t.jugadores?.find(j=>j.id===p.j2);
-  const etapa=p.grupo!=null?`Grupo ${String.fromCharCode(65+p.grupo)}`:(p.ronda||'Partido');
+  const totalRondas = p.rondaIdx!=null ? Math.max(...(t.partidos||[]).filter(x=>x.rondaIdx!=null).map(x=>x.rondaIdx))+1 : 0;
+  const etapa = getRondaNombre(p, totalRondas);
+  const sinJugadores = !j1 || !j2;
   if(readonly){
     return `<div class="partido-row" style="opacity:.7">
       <div class="names">${j1?.nombre||'?'} <span style="color:var(--gold);font-family:var(--T)"> ${p.score1} - ${p.score2} </span> ${j2?.nombre||'?'}</div>
@@ -594,11 +606,15 @@ function partidoRow(p, readonly=false){
     </div>`;
   }
   return `<div class="partido-row" id="row-${p.id}">
-    <div class="names" style="font-size:.82rem">${j1?.nombre||'Por definir'} vs ${j2?.nombre||'Por definir'}<br><span style="font-size:.68rem;color:var(--muted)">${etapa}</span></div>
-    <input class="score-input" type="number" id="s1-${p.id}" placeholder="0" min="0" max="99" ${!j1||!j2?'disabled':''}>
+    <div class="names" style="font-size:.82rem">
+      ${j1?.nombre||'<em style="color:var(--muted);font-size:.75rem">Por definir</em>'} vs ${j2?.nombre||'<em style="color:var(--muted);font-size:.75rem">Por definir</em>'}
+      <br><span style="font-size:.68rem;color:var(--muted)">${etapa}</span>
+    </div>
+    <input class="score-input" type="number" id="s1-${p.id}" placeholder="0" min="0" max="99" ${sinJugadores?'disabled':''}>
     <span class="vs">–</span>
-    <input class="score-input" type="number" id="s2-${p.id}" placeholder="0" min="0" max="99" ${!j1||!j2?'disabled':''}>
-    <button class="btn btn-green btn-xs" onclick="guardarResultado('${p.id}')" ${!j1||!j2?'disabled':''}><i class="fas fa-check"></i></button>
+    <input class="score-input" type="number" id="s2-${p.id}" placeholder="0" min="0" max="99" ${sinJugadores?'disabled':''}>
+    <button class="btn btn-green btn-xs" onclick="guardarResultado('${p.id}')" ${sinJugadores?'disabled':''}><i class="fas fa-check"></i></button>
+    ${sinJugadores?'<span style="font-size:.7rem;color:var(--muted);font-style:italic">Espera resultados anteriores</span>':''}
   </div>`;
 }
 
