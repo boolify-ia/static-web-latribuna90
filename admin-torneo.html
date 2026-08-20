@@ -766,16 +766,33 @@ window.resetPartido = async function(pid){
 };
 
 window.toggleIdaVuelta = async function(pid){
-  const p=T.partidos.find(x=>x.id===pid);
+  const p = T.partidos.find(x=>x.id===pid);
   let partidos;
   if(p.idaVuelta){
-    partidos=T.partidos.filter(x=>!(x.esVuelta&&x.ordenEnRonda===p.ordenEnRonda&&x.rondaIdx===p.rondaIdx))
-                       .map(x=>x.id===pid?{...x,idaVuelta:false,esIda:false}:x);
+    // Desactivar: quitar la vuelta y el flag
+    partidos = T.partidos
+      .filter(x=>!(x.esVuelta && x.ordenEnRonda===p.ordenEnRonda && x.rondaIdx===p.rondaIdx))
+      .map(x=>x.id===pid ? {...x, idaVuelta:false, esIda:false} : x);
   } else {
-    const vuelta={id:'pv-'+Date.now().toString(36),j1:p.j2,j2:p.j1,score1:null,score2:null,ganador:null,rondaIdx:p.rondaIdx,ordenEnRonda:p.ordenEnRonda,esVuelta:true};
-    partidos=T.partidos.map(x=>x.id===pid?{...x,idaVuelta:true,esIda:true}:x);
-    const idx=partidos.findIndex(x=>x.id===pid);
-    partidos.splice(idx+1,0,vuelta);
+    // Activar: marcar este como ida
+    partidos = T.partidos.map(x=>x.id===pid ? {...x, idaVuelta:true, esIda:true} : x);
+    // Crear partido de vuelta
+    const vuelta = {
+      id:'pv-'+Date.now().toString(36),
+      j1:p.j2, j2:p.j1,
+      score1:null, score2:null, ganador:null,
+      rondaIdx:p.rondaIdx, ordenEnRonda:p.ordenEnRonda,
+      esVuelta:true
+    };
+    // Insertar al final de los partidos pendientes de esa misma ronda
+    const ultimoDeRonda = partidos.reduce((lastIdx, x, i) => {
+      return (x.rondaIdx===p.rondaIdx && x.score1==null) ? i : lastIdx;
+    }, -1);
+    if(ultimoDeRonda >= 0){
+      partidos.splice(ultimoDeRonda+1, 0, vuelta);
+    } else {
+      partidos.push(vuelta);
+    }
   }
   await updateDoc(doc(db,'torneos',T.id),{partidos});
   T={...T,partidos}; loadPartidos();
