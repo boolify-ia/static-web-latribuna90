@@ -689,41 +689,55 @@ window.guardar = async function(pid){
 
 async function finalizar(pid,s1,s2,ganador,partidos){
   let p2=partidos.map(x=>x.id===pid?{...x,ganador}:x);
-  if(T.formato==='eliminacion') avanzar(p2);
+  // Avanzar si hay partidos de eliminación (rondaIdx), sin importar el formato
+  if(p2.some(x=>x.rondaIdx!=null)) avanzar(p2);
   await updateDoc(doc(db,'torneos',T.id),{partidos:p2});
   T={...T,partidos:p2}; loadPartidos();
 }
 
 function avanzar(partidos){
-  // Ronda 0
-  const r0=partidos.filter(p=>p.rondaIdx===0);
-  const ordenes=[...new Set(r0.map(p=>p.ordenEnRonda))];
-  ordenes.forEach(orden=>{
-    const par=r0.filter(p=>p.ordenEnRonda===orden);
-    const tieneIV=par.some(p=>p.esIda||p.esVuelta);
-    let gan=null;
-    if(tieneIV){
-      if(!par.every(p=>p.score1!=null)) return;
-      const ida=par.find(p=>p.esIda)||par[0],vta=par.find(p=>p.esVuelta)||par[1];
-      const a1=(ida.score1||0)+(vta.score2||0),a2=(ida.score2||0)+(vta.score1||0);
-      gan=a1>a2?ida.j1:a2>a1?ida.j2:ida.j1;
-    } else {
-      const m=par[0]; if(m?.score1==null) return;
-      gan=m.score1>m.score2?m.j1:m.score2>m.score1?m.j2:m.j1;
-    }
-    const idx=partidos.findIndex(p=>p.rondaIdx===1&&p.ordenEnRonda===orden);
-    if(idx>=0) partidos[idx]={...partidos[idx],j1:gan};
-  });
-  // Rondas siguientes
-  const max=Math.max(...partidos.map(p=>p.rondaIdx||0));
-  for(let ri=1;ri<max;ri++){
+  const max=Math.max(...partidos.filter(p=>p.rondaIdx!=null).map(p=>p.rondaIdx));
+
+  for(let ri=0; ri<=max-1; ri++){
     const ronda=partidos.filter(p=>p.rondaIdx===ri).sort((a,b)=>(a.ordenEnRonda||0)-(b.ordenEnRonda||0));
-    for(let i=0;i<ronda.length;i+=2){
-      const m1=ronda[i],m2=ronda[i+1];
-      if(!m1?.ganador||!m2?.ganador) continue;
-      const idx=partidos.findIndex(p=>p.rondaIdx===ri+1&&p.ordenEnRonda===Math.floor(i/2));
-      if(idx>=0) partidos[idx]={...partidos[idx],j1:m1.ganador,j2:m2.ganador};
-    }
+
+    // Agrupar por ordenEnRonda (puede haber pares ida/vuelta con mismo ordenEnRonda)
+    const ordenesRonda=[...new Set(ronda.map(p=>p.ordenEnRonda))];
+
+    ordenesRonda.forEach(orden=>{
+      const par=ronda.filter(p=>p.ordenEnRonda===orden);
+      const tieneIV=par.some(p=>p.esIda||p.esVuelta);
+      let gan=null;
+
+      if(tieneIV){
+        // Necesita ambos jugados
+        if(!par.every(p=>p.score1!=null)) return;
+        const ida=par.find(p=>p.esIda)||par[0];
+        const vta=par.find(p=>p.esVuelta)||par[1];
+        const a1=(ida.score1||0)+(vta.score2||0);
+        const a2=(ida.score2||0)+(vta.score1||0);
+        gan=a1>a2?ida.j1:a2>a1?ida.j2:ida.j1;
+      } else {
+        const m=par[0];
+        if(m?.ganador==null) return;
+        gan=m.ganador;
+      }
+
+      if(!gan) return;
+
+      // El ganador del partido en posición `orden` de esta ronda va al partido
+      // en posición Math.floor(orden/2) de la siguiente ronda.
+      // Si orden es par → ocupa j1, si es impar → ocupa j2
+      const siguienteOrden=Math.floor(orden/2);
+      const idx=partidos.findIndex(p=>p.rondaIdx===ri+1&&p.ordenEnRonda===siguienteOrden);
+      if(idx>=0){
+        if(orden%2===0){
+          partidos[idx]={...partidos[idx],j1:gan};
+        } else {
+          partidos[idx]={...partidos[idx],j2:gan};
+        }
+      }
+    });
   }
 }
 
@@ -738,7 +752,7 @@ function mostrarModal(pid,j1id,j2id,desc){
 
 window.definirGanador = async function(pid,ganId){
   let p2=T.partidos.map(x=>x.id===pid?{...x,ganador:ganId}:x);
-  if(T.formato==='eliminacion') avanzar(p2);
+  if(p2.some(x=>x.rondaIdx!=null)) avanzar(p2);
   await updateDoc(doc(db,'torneos',T.id),{partidos:p2});
   T={...T,partidos:p2};
   cerrarModal();
