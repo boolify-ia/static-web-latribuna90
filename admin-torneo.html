@@ -696,46 +696,46 @@ async function finalizar(pid,s1,s2,ganador,partidos){
 }
 
 function avanzar(partidos){
-  const max=Math.max(...partidos.filter(p=>p.rondaIdx!=null).map(p=>p.rondaIdx));
+  const elimPartidos = partidos.filter(p=>p.rondaIdx!=null);
+  if(!elimPartidos.length) return;
+  const max = Math.max(...elimPartidos.map(p=>p.rondaIdx));
 
   for(let ri=0; ri<=max-1; ri++){
-    const ronda=partidos.filter(p=>p.rondaIdx===ri).sort((a,b)=>(a.ordenEnRonda||0)-(b.ordenEnRonda||0));
+    // Obtener partidos únicos de esta ronda (deduplicar por ordenEnRonda para ida/vuelta)
+    const rondaAll = elimPartidos.filter(p=>p.rondaIdx===ri);
+    const ordenes = [...new Set(rondaAll.map(p=>p.ordenEnRonda))].sort((a,b)=>a-b);
 
-    // Agrupar por ordenEnRonda (puede haber pares ida/vuelta con mismo ordenEnRonda)
-    const ordenesRonda=[...new Set(ronda.map(p=>p.ordenEnRonda))];
-
-    ordenesRonda.forEach(orden=>{
-      const par=ronda.filter(p=>p.ordenEnRonda===orden);
-      const tieneIV=par.some(p=>p.esIda||p.esVuelta);
-      let gan=null;
+    ordenes.forEach(orden=>{
+      const par = rondaAll.filter(p=>p.ordenEnRonda===orden);
+      const tieneIV = par.some(p=>p.esIda||p.esVuelta);
+      let gan = null;
 
       if(tieneIV){
         // Necesita ambos jugados
-        if(!par.every(p=>p.score1!=null)) return;
-        const ida=par.find(p=>p.esIda)||par[0];
-        const vta=par.find(p=>p.esVuelta)||par[1];
+        const ida = par.find(p=>p.esIda)||par[0];
+        const vta = par.find(p=>p.esVuelta)||par[1];
+        if(!ida||!vta||ida.score1==null||vta.score1==null) return;
         const a1=(ida.score1||0)+(vta.score2||0);
         const a2=(ida.score2||0)+(vta.score1||0);
-        gan=a1>a2?ida.j1:a2>a1?ida.j2:ida.j1;
+        gan = a1>a2 ? ida.j1 : a2>a1 ? ida.j2 : ida.j1;
       } else {
-        const m=par[0];
-        if(m?.ganador==null) return;
-        gan=m.ganador;
+        const m = par[0];
+        if(!m||m.ganador==null) return;
+        gan = m.ganador;
       }
 
       if(!gan) return;
 
-      // El ganador del partido en posición `orden` de esta ronda va al partido
-      // en posición Math.floor(orden/2) de la siguiente ronda.
-      // Si orden es par → ocupa j1, si es impar → ocupa j2
-      const siguienteOrden=Math.floor(orden/2);
-      const idx=partidos.findIndex(p=>p.rondaIdx===ri+1&&p.ordenEnRonda===siguienteOrden);
-      if(idx>=0){
-        if(orden%2===0){
-          partidos[idx]={...partidos[idx],j1:gan};
-        } else {
-          partidos[idx]={...partidos[idx],j2:gan};
-        }
+      // Partido destino en la siguiente ronda
+      const siguienteOrden = Math.floor(orden/2);
+      const idx = partidos.findIndex(p=>p.rondaIdx===ri+1 && p.ordenEnRonda===siguienteOrden);
+      if(idx < 0) return;
+
+      // Par → j1, Impar → j2
+      if(orden%2===0){
+        partidos[idx] = {...partidos[idx], j1:gan};
+      } else {
+        partidos[idx] = {...partidos[idx], j2:gan};
       }
     });
   }

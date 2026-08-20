@@ -240,38 +240,60 @@ function buildTabs(t){
 // ── BRACKET ────────────────────────────────────────────────
 function renderBracket(t){
   const partidos = t.partidos||[];
-  // Reconstruir rondas desde partidos planos
   const maxRonda = Math.max(...partidos.filter(p=>p.rondaIdx!=null).map(p=>p.rondaIdx), -1);
   if(maxRonda < 0) return '<div class="empty">El bracket aún no ha sido generado</div>';
 
+  // Agrupar por rondaIdx — filtrar solo uno por ordenEnRonda (ignorar vuelta duplicada visualmente)
   const rondas = [];
   for(let ri=0; ri<=maxRonda; ri++){
-    rondas.push(partidos.filter(p=>p.rondaIdx===ri).sort((a,b)=>(a.ordenEnRonda||0)-(b.ordenEnRonda||0)));
+    // Si hay ida/vuelta en ri=0, mostrar solo uno por par (el de ida, o el primero)
+    let ps = partidos.filter(p=>p.rondaIdx===ri).sort((a,b)=>(a.ordenEnRonda||0)-(b.ordenEnRonda||0));
+    // Deduplicar por ordenEnRonda (tomar solo uno por par)
+    const vistas = new Set();
+    ps = ps.filter(p=>{ if(vistas.has(p.ordenEnRonda)) return false; vistas.add(p.ordenEnRonda); return true; });
+    rondas.push(ps);
   }
-  if(!rondas||!rondas.length) return '<div class="empty">El bracket aún no ha sido generado</div>';
-  const nombres = {1:'Final',2:'Semifinales',4:'Cuartos',8:'Octavos',16:'Dieciseisavos'};
+
+  // Nombres desde la final hacia atrás
+  const nombresPorTamaño = {1:'Final',2:'Semifinales',4:'Cuartos de Final',8:'Octavos de Final',16:'Dieciseisavos'};
+  // La última ronda siempre es la Final (1 partido)
+  // Construir mapa de rondaIdx → nombre
+  const nombresRonda = {};
+  rondas.forEach((ronda, ri)=>{
+    const n = ronda.length;
+    nombresRonda[ri] = nombresPorTamaño[n] || (ri===0 && rondas.length>1 ? `Ronda Inicial` : `Ronda ${ri+1}`);
+  });
+
   let html = '<div class="bracket-wrap"><div class="bracket">';
-  rondas.forEach((ronda,ri)=>{
-    const n = rondas.length - ri;
-    const titulo = nombres[n] || `Ronda ${ri+1}`;
+  rondas.forEach((ronda, ri)=>{
     const itemH = 90;
-    const totalH = ronda.length * itemH * Math.pow(2, ri);
-    html += `<div class="round"><div class="round-title">${titulo}</div><div class="round-matches" style="gap:${ri===0?'8px':(itemH*Math.pow(2,ri)-itemH)+'px'}">`;
-    ronda.forEach((m,mi)=>{
+    const gap = ri===0 ? '8px' : (itemH * Math.pow(2, ri) - itemH)+'px';
+    html += `<div class="round"><div class="round-title">${nombresRonda[ri]}</div><div class="round-matches" style="gap:${gap}">`;
+    ronda.forEach((m, mi)=>{
       const j1 = t.jugadores?.find(j=>j.id===m.j1);
       const j2 = t.jugadores?.find(j=>j.id===m.j2);
-      const win1 = m.ganador===m.j1, win2 = m.ganador===m.j2;
+      // Para ida/vuelta en ronda 0, buscar resultado acumulado
+      let score1 = m.score1, score2 = m.score2, ganador = m.ganador;
+      if(m.esIda || (!m.esVuelta && partidos.some(p=>p.esVuelta&&p.ordenEnRonda===m.ordenEnRonda&&p.rondaIdx===m.rondaIdx))){
+        const vta = partidos.find(p=>p.esVuelta&&p.ordenEnRonda===m.ordenEnRonda&&p.rondaIdx===m.rondaIdx);
+        if(vta?.score1!=null && m.score1!=null){
+          score1 = (m.score1||0)+(vta.score2||0);
+          score2 = (m.score2||0)+(vta.score1||0);
+          ganador = m.ganador;
+        }
+      }
+      const win1 = ganador===m.j1, win2 = ganador===m.j2;
       html += `<div class="match-slot">
         <div class="match-card">
           <div class="match-player ${win1?'winner':''}">
             ${avatarSm(j1)} <span class="mp-name">${j1?.nombre||'<span class="tbd">Por definir</span>'}</span>
-            <span class="mp-score ${win1?'win':''}">${m.score1??''}</span>
+            <span class="mp-score ${win1?'win':''}">${score1??''}</span>
           </div>
           <div class="match-player ${win2?'winner':''}">
             ${avatarSm(j2)} <span class="mp-name">${j2?.nombre||'<span class="tbd">Por definir</span>'}</span>
-            <span class="mp-score ${win2?'win':''}">${m.score2??''}</span>
+            <span class="mp-score ${win2?'win':''}">${score2??''}</span>
           </div>
-          ${m.ganador?'':'<div class="match-num">Partido '+(mi+1)+'</div>'}
+          ${ganador?'':'<div class="match-num">Partido '+(mi+1)+'</div>'}
         </div>
       </div>`;
     });
