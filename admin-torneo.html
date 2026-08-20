@@ -776,7 +776,7 @@ window.toggleIdaVuelta = async function(pid){
   } else {
     // Activar: marcar este como ida
     partidos = T.partidos.map(x=>x.id===pid ? {...x, idaVuelta:true, esIda:true} : x);
-    // Crear partido de vuelta
+    // Crear partido de vuelta y agregar al FINAL de todos los partidos pendientes
     const vuelta = {
       id:'pv-'+Date.now().toString(36),
       j1:p.j2, j2:p.j1,
@@ -784,15 +784,10 @@ window.toggleIdaVuelta = async function(pid){
       rondaIdx:p.rondaIdx, ordenEnRonda:p.ordenEnRonda,
       esVuelta:true
     };
-    // Insertar al final de los partidos pendientes de esa misma ronda
-    const ultimoDeRonda = partidos.reduce((lastIdx, x, i) => {
-      return (x.rondaIdx===p.rondaIdx && x.score1==null) ? i : lastIdx;
-    }, -1);
-    if(ultimoDeRonda >= 0){
-      partidos.splice(ultimoDeRonda+1, 0, vuelta);
-    } else {
-      partidos.push(vuelta);
-    }
+    // Separar jugados y pendientes, insertar vuelta al final de pendientes
+    const jugados   = partidos.filter(x=>x.score1!=null);
+    const pendientes = partidos.filter(x=>x.score1==null);
+    partidos = [...pendientes, vuelta, ...jugados];
   }
   await updateDoc(doc(db,'torneos',T.id),{partidos});
   T={...T,partidos}; loadPartidos();
