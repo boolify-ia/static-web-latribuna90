@@ -240,67 +240,114 @@ function buildTabs(t){
 // ── BRACKET ────────────────────────────────────────────────
 function renderBracket(t){
   const partidos = t.partidos||[];
-  const maxRonda = Math.max(...partidos.filter(p=>p.rondaIdx!=null).map(p=>p.rondaIdx), -1);
-  if(maxRonda < 0) return '<div class="empty">El bracket aún no ha sido generado</div>';
+  const maxRi = Math.max(...partidos.filter(p=>p.rondaIdx!=null).map(p=>p.rondaIdx), -1);
+  if(maxRi < 0) return '<div class="empty">El bracket aún no ha sido generado</div>';
 
-  // Agrupar por rondaIdx — filtrar solo uno por ordenEnRonda (ignorar vuelta duplicada visualmente)
+  // Agrupar rondas, deduplicar por ordenEnRonda
   const rondas = [];
-  for(let ri=0; ri<=maxRonda; ri++){
-    // Si hay ida/vuelta en ri=0, mostrar solo uno por par (el de ida, o el primero)
-    let ps = partidos.filter(p=>p.rondaIdx===ri).sort((a,b)=>(a.ordenEnRonda||0)-(b.ordenEnRonda||0));
-    // Deduplicar por ordenEnRonda (tomar solo uno por par)
-    const vistas = new Set();
-    ps = ps.filter(p=>{ if(vistas.has(p.ordenEnRonda)) return false; vistas.add(p.ordenEnRonda); return true; });
-    rondas.push(ps);
+  for(let ri=0; ri<=maxRi; ri++){
+    const all = partidos.filter(p=>p.rondaIdx===ri).sort((a,b)=>(a.ordenEnRonda||0)-(b.ordenEnRonda||0));
+    const vistas=new Set(); const dedup=[];
+    all.forEach(p=>{ if(!vistas.has(p.ordenEnRonda)){ vistas.add(p.ordenEnRonda); dedup.push(p); } });
+    rondas.push(dedup);
   }
 
-  // Nombres desde la final hacia atrás
-  const nombresPorTamaño = {1:'Final',2:'Semifinales',4:'Cuartos de Final',8:'Octavos de Final',16:'Dieciseisavos'};
-  // La última ronda siempre es la Final (1 partido)
-  // Construir mapa de rondaIdx → nombre
-  const nombresRonda = {};
-  rondas.forEach((ronda, ri)=>{
-    const n = ronda.length;
-    nombresRonda[ri] = nombresPorTamaño[n] || (ri===0 && rondas.length>1 ? `Ronda Inicial` : `Ronda ${ri+1}`);
-  });
+  const nombresPorN={1:'Final',2:'Semifinales',4:'Cuartos de Final',8:'Octavos de Final',16:'Dieciseisavos',32:'Treintaidosavos'};
+  const getNombre=(ri)=>{
+    const n=rondas[ri].length;
+    if(ri===0&&rondas.length>1) return nombresPorN[n*2]||'Ronda Inicial';
+    return nombresPorN[n]||`Ronda ${ri+1}`;
+  };
 
-  let html = '<div class="bracket-wrap"><div class="bracket">';
-  rondas.forEach((ronda, ri)=>{
-    const itemH = 90;
-    const gap = ri===0 ? '8px' : (itemH * Math.pow(2, ri) - itemH)+'px';
-    html += `<div class="round"><div class="round-title">${nombresRonda[ri]}</div><div class="round-matches" style="gap:${gap}">`;
-    ronda.forEach((m, mi)=>{
-      const j1 = t.jugadores?.find(j=>j.id===m.j1);
-      const j2 = t.jugadores?.find(j=>j.id===m.j2);
-      // Para ida/vuelta en ronda 0, buscar resultado acumulado
-      let score1 = m.score1, score2 = m.score2, ganador = m.ganador;
-      if(m.esIda || (!m.esVuelta && partidos.some(p=>p.esVuelta&&p.ordenEnRonda===m.ordenEnRonda&&p.rondaIdx===m.rondaIdx))){
-        const vta = partidos.find(p=>p.esVuelta&&p.ordenEnRonda===m.ordenEnRonda&&p.rondaIdx===m.rondaIdx);
-        if(vta?.score1!=null && m.score1!=null){
-          score1 = (m.score1||0)+(vta.score2||0);
-          score2 = (m.score2||0)+(vta.score1||0);
-          ganador = m.ganador;
-        }
-      }
-      const win1 = ganador===m.j1, win2 = ganador===m.j2;
-      html += `<div class="match-slot">
-        <div class="match-card">
-          <div class="match-player ${win1?'winner':''}">
-            ${avatarSm(j1)} <span class="mp-name">${j1?.nombre||'<span class="tbd">Por definir</span>'}</span>
-            <span class="mp-score ${win1?'win':''}">${score1??''}</span>
-          </div>
-          <div class="match-player ${win2?'winner':''}">
-            ${avatarSm(j2)} <span class="mp-name">${j2?.nombre||'<span class="tbd">Por definir</span>'}</span>
-            <span class="mp-score ${win2?'win':''}">${score2??''}</span>
-          </div>
-          ${ganador?'':'<div class="match-num">Partido '+(mi+1)+'</div>'}
+  // Dividir en mitad izquierda y derecha (tipo Mundial)
+  // Izquierda: rondas normales (inicial → semis)
+  // Derecha: rondas espejadas (semis → inicial)
+  // Centro: Final
+  const totalRondas = rondas.length;
+
+  if(totalRondas === 1){
+    // Solo Final
+    return renderRondaSimple(rondas[0], t, 'Final');
+  }
+
+  // Construir bracket tipo árbol
+  // Mitad izquierda: partidos 0..N/2-1 de cada ronda
+  // Mitad derecha: partidos N/2..N-1 de cada ronda (espejado)
+  let html = `<style>
+    .bracket-v2{display:flex;gap:0;align-items:stretch;overflow-x:auto;padding:1rem 0;}
+    .bracket-col{display:flex;flex-direction:column;min-width:170px;}
+    .bracket-col-title{font-family:var(--ff-sub,var(--S));font-size:.65rem;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);text-align:center;padding:.4rem .5rem;border-bottom:1px solid rgba(212,175,55,.2);margin-bottom:.5rem;}
+    .bracket-matches{display:flex;flex-direction:column;flex:1;justify-content:space-around;gap:8px;padding:0 6px;}
+    .bm-card{background:rgba(54,19,14,.8);border:1px solid rgba(212,175,55,.2);border-radius:.55rem;overflow:hidden;}
+    .bm-card:hover{border-color:rgba(212,175,55,.5);}
+    .bm-player{display:flex;align-items:center;gap:.45rem;padding:.42rem .6rem;border-bottom:1px solid rgba(255,255,255,.05);}
+    .bm-player:last-child{border-bottom:none;}
+    .bm-player.winner{background:rgba(49,75,54,.35);}
+    .bm-player.winner .bm-name{color:#81c784;font-weight:700;}
+    .bm-av{width:22px;height:22px;border-radius:50%;background:rgba(212,175,55,.15);display:flex;align-items:center;justify-content:center;font-family:var(--T);font-size:.8rem;color:var(--gold);flex-shrink:0;overflow:hidden;}
+    .bm-av img{width:100%;height:100%;object-fit:cover;}
+    .bm-name{flex:1;font-family:var(--S);font-size:.75rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .bm-score{font-family:var(--T);font-size:1rem;color:var(--gold);min-width:16px;text-align:right;}
+    .bm-score.win{color:#81c784;}
+    .bm-tbd{color:var(--muted);font-style:italic;font-size:.72rem;}
+    .final-col{min-width:190px;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+    .final-col-title{font-family:var(--T);font-size:1.4rem;letter-spacing:.08em;color:var(--gold);text-align:center;margin-bottom:.5rem;}
+    .champion-mark{font-size:2rem;text-align:center;margin-bottom:.3rem;}
+  </style>
+  <div class="bracket-v2">`;
+
+  function bmCard(m){
+    const j1=t.jugadores?.find(j=>j.id===m.j1), j2=t.jugadores?.find(j=>j.id===m.j2);
+    const w1=m.ganador&&m.ganador===m.j1, w2=m.ganador&&m.ganador===m.j2;
+    const av=(j)=>`<div class="bm-av">${j?.foto?`<img src="${j.foto}">`:(j?.nombre?.[0]||'?')}</div>`;
+    const sc=(s,win)=>s!=null?`<span class="bm-score ${win?'win':''}">${s}</span>`:'';
+    return `<div class="bm-card">
+      <div class="bm-player ${w1?'winner':''}">
+        ${av(j1)}<span class="bm-name ${!j1?'bm-tbd':''}">${j1?.nombre||'Por definir'}</span>${sc(m.score1,w1)}
+      </div>
+      <div class="bm-player ${w2?'winner':''}">
+        ${av(j2)}<span class="bm-name ${!j2?'bm-tbd':''}">${j2?.nombre||'Por definir'}</span>${sc(m.score2,w2)}
+      </div>
+    </div>`;
+  }
+
+  // Columnas de izquierda a derecha: R0, R1, ..., Rfinal
+  rondas.forEach((ronda,ri)=>{
+    const esFinal = ri===totalRondas-1;
+    if(esFinal){
+      const m=ronda[0];
+      html+=`<div class="final-col">
+        <div class="champion-mark">🏆</div>
+        <div class="final-col-title">FINAL</div>
+        ${bmCard(m)}
+      </div>`;
+    } else {
+      html+=`<div class="bracket-col">
+        <div class="bracket-col-title">${getNombre(ri)}</div>
+        <div class="bracket-matches">
+          ${ronda.map(m=>bmCard(m)).join('<div style="height:8px"></div>')}
         </div>
       </div>`;
-    });
-    html += '</div></div>';
+    }
   });
-  html += '</div></div>';
+
+  html += '</div>';
   return html;
+}
+
+function renderRondaSimple(ronda, t, titulo){
+  return `<div style="text-align:center;padding:1rem">
+    <div style="font-family:var(--T);font-size:1.5rem;color:var(--gold);margin-bottom:1rem">${titulo}</div>
+    ${ronda.map(m=>{
+      const j1=t.jugadores?.find(j=>j.id===m.j1),j2=t.jugadores?.find(j=>j.id===m.j2);
+      const w1=m.ganador===m.j1,w2=m.ganador===m.j2;
+      return `<div style="background:rgba(54,19,14,.8);border:1px solid rgba(212,175,55,.3);border-radius:.7rem;padding:1rem;max-width:280px;margin:0 auto .75rem">
+        <div style="font-family:var(--S);font-weight:${w1?700:600};color:${w1?'#81c784':'var(--cream)'};">${j1?.nombre||'Por definir'} ${m.score1!=null?m.score1:''}</div>
+        <div style="color:var(--muted);font-size:.75rem;margin:.3rem 0">vs</div>
+        <div style="font-family:var(--S);font-weight:${w2?700:600};color:${w2?'#81c784':'var(--cream)'};">${j2?.nombre||'Por definir'} ${m.score2!=null?m.score2:''}</div>
+      </div>`;
+    }).join('')}
+  </div>`;
 }
 
 // ── GRUPOS ─────────────────────────────────────────────────

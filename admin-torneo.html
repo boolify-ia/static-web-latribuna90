@@ -460,22 +460,31 @@ function generarElim(js){
   const nPares=n-clasif, nJR1=nPares*2;
   const r1js=js.slice(0,nJR1), byes=js.slice(nJR1);
   const partidos=[]; let pid=0;
+
+  // Ronda 0: un partido por par, ordenEnRonda = 0..nPares-1
   for(let i=0;i<nJR1;i+=2){
-    const j1=r1js[i],j2=r1js[i+1],orden=Math.floor(i/2);
-    partidos.push({id:'p'+(pid++),j1:j1.id,j2:j2.id,score1:null,score2:null,ganador:null,rondaIdx:0,ordenEnRonda:orden});
+    partidos.push({id:'p'+(pid++),j1:r1js[i].id,j2:r1js[i+1].id,
+      score1:null,score2:null,ganador:null,rondaIdx:0,ordenEnRonda:Math.floor(i/2)});
   }
-  let size=clasif,ri=1;
+
+  // Rondas siguientes
+  // En ronda 1: posición k recibe:
+  //   k < nPares → ganador de R0[k] (TBD, j1=null si par-k par, j2=null si impar)
+  //   k >= nPares → bye conocido
+  let size=clasif, ri=1;
   while(size>=2){
     for(let i=0;i<size;i+=2){
       const orden=Math.floor(i/2);
-      let j1=null,j2=null;
+      let j1=null, j2=null;
       if(ri===1){
-        if(i>=nPares) j1=byes[i-nPares]?.id||null;
-        if((i+1)>=nPares) j2=byes[(i+1)-nPares]?.id||null;
+        // posición i en ronda1
+        // par: si i >= nPares es BYE, sino TBD
+        j1 = i >= nPares ? (byes[i-nPares]?.id||null) : null;
+        j2 = (i+1) >= nPares ? (byes[(i+1)-nPares]?.id||null) : null;
       }
       partidos.push({id:'p'+(pid++),j1,j2,score1:null,score2:null,ganador:null,rondaIdx:ri,ordenEnRonda:orden});
     }
-    size=size/2;ri++;
+    size=size/2; ri++;
   }
   return partidos;
 }
@@ -696,46 +705,36 @@ async function finalizar(pid,s1,s2,ganador,partidos){
 }
 
 function avanzar(partidos){
-  const elimPartidos = partidos.filter(p=>p.rondaIdx!=null);
-  if(!elimPartidos.length) return;
-  const max = Math.max(...elimPartidos.map(p=>p.rondaIdx));
-
-  for(let ri=0; ri<=max-1; ri++){
-    // Obtener partidos únicos de esta ronda (deduplicar por ordenEnRonda para ida/vuelta)
-    const rondaAll = elimPartidos.filter(p=>p.rondaIdx===ri);
-    const ordenes = [...new Set(rondaAll.map(p=>p.ordenEnRonda))].sort((a,b)=>a-b);
-
+  const max=Math.max(...partidos.filter(p=>p.rondaIdx!=null).map(p=>p.rondaIdx));
+  for(let ri=0; ri<max; ri++){
+    // Ordenes únicos de esta ronda
+    const rondaPartidos=partidos.filter(p=>p.rondaIdx===ri);
+    const ordenes=[...new Set(rondaPartidos.map(p=>p.ordenEnRonda))].sort((a,b)=>a-b);
     ordenes.forEach(orden=>{
-      const par = rondaAll.filter(p=>p.ordenEnRonda===orden);
-      const tieneIV = par.some(p=>p.esIda||p.esVuelta);
-      let gan = null;
-
+      const par=rondaPartidos.filter(p=>p.ordenEnRonda===orden);
+      const tieneIV=par.some(p=>p.esIda||p.esVuelta);
+      let gan=null;
       if(tieneIV){
-        // Necesita ambos jugados
-        const ida = par.find(p=>p.esIda)||par[0];
-        const vta = par.find(p=>p.esVuelta)||par[1];
+        const ida=par.find(p=>p.esIda)||par[0];
+        const vta=par.find(p=>p.esVuelta)||par[1];
         if(!ida||!vta||ida.score1==null||vta.score1==null) return;
-        const a1=(ida.score1||0)+(vta.score2||0);
-        const a2=(ida.score2||0)+(vta.score1||0);
-        gan = a1>a2 ? ida.j1 : a2>a1 ? ida.j2 : ida.j1;
+        const a1=(ida.score1||0)+(vta.score2||0), a2=(ida.score2||0)+(vta.score1||0);
+        gan=a1>a2?ida.j1:a2>a1?ida.j2:ida.j1;
       } else {
-        const m = par[0];
+        const m=par[0];
         if(!m||m.ganador==null) return;
-        gan = m.ganador;
+        gan=m.ganador;
       }
-
       if(!gan) return;
-
-      // Partido destino en la siguiente ronda
-      const siguienteOrden = Math.floor(orden/2);
-      const idx = partidos.findIndex(p=>p.rondaIdx===ri+1 && p.ordenEnRonda===siguienteOrden);
-      if(idx < 0) return;
-
-      // Par → j1, Impar → j2
+      // Destino: partido Math.floor(orden/2) en ronda ri+1
+      const destOrden=Math.floor(orden/2);
+      const idx=partidos.findIndex(p=>p.rondaIdx===ri+1&&p.ordenEnRonda===destOrden);
+      if(idx<0) return;
+      // Par → j1, impar → j2
       if(orden%2===0){
-        partidos[idx] = {...partidos[idx], j1:gan};
+        partidos[idx]={...partidos[idx],j1:gan};
       } else {
-        partidos[idx] = {...partidos[idx], j2:gan};
+        partidos[idx]={...partidos[idx],j2:gan};
       }
     });
   }
