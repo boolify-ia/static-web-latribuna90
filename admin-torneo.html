@@ -674,8 +674,9 @@ window.guardar = async function(pid){
     T={...T,partidos}; loadPartidos(); return;
   }
 
-  // Partido simple empate → modal solo en eliminación
-  if(s1===s2&&T.formato==='eliminacion'){
+  // Partido simple empate → modal si es eliminación (tiene rondaIdx) sin importar el formato del torneo
+  const esElim = p.rondaIdx != null;
+  if(s1===s2 && esElim){
     T={...T,partidos};
     mostrarModal(pid,p.j1,p.j2,`Empate ${s1}-${s2}. Define quién avanza:`);
     return;
