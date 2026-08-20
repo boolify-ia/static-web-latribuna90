@@ -705,37 +705,38 @@ async function finalizar(pid,s1,s2,ganador,partidos){
 }
 
 function avanzar(partidos){
-  const max=Math.max(...partidos.filter(p=>p.rondaIdx!=null).map(p=>p.rondaIdx));
+  const max = Math.max(...partidos.filter(p=>p.rondaIdx!=null).map(p=>p.rondaIdx));
+  console.log('=== AVANZAR max ronda:', max);
   for(let ri=0; ri<max; ri++){
-    // Ordenes únicos de esta ronda
-    const rondaPartidos=partidos.filter(p=>p.rondaIdx===ri);
-    const ordenes=[...new Set(rondaPartidos.map(p=>p.ordenEnRonda))].sort((a,b)=>a-b);
+    const rondaPartidos = partidos.filter(p=>p.rondaIdx===ri);
+    const ordenes = [...new Set(rondaPartidos.map(p=>p.ordenEnRonda))].sort((a,b)=>a-b);
     ordenes.forEach(orden=>{
-      const par=rondaPartidos.filter(p=>p.ordenEnRonda===orden);
-      const tieneIV=par.some(p=>p.esIda||p.esVuelta);
-      let gan=null;
+      const par = rondaPartidos.filter(p=>p.ordenEnRonda===orden);
+      const tieneIV = par.some(p=>p.esIda||p.esVuelta);
+      let gan = null;
       if(tieneIV){
-        const ida=par.find(p=>p.esIda)||par[0];
-        const vta=par.find(p=>p.esVuelta)||par[1];
-        if(!ida||!vta||ida.score1==null||vta.score1==null) return;
+        const ida = par.find(p=>p.esIda)||par[0];
+        const vta = par.find(p=>p.esVuelta)||par[1];
+        if(!ida||!vta||ida.score1==null||vta.score1==null){ console.log(`R${ri}[${orden}] IV incompleto`); return; }
         const a1=(ida.score1||0)+(vta.score2||0), a2=(ida.score2||0)+(vta.score1||0);
-        gan=a1>a2?ida.j1:a2>a1?ida.j2:ida.j1;
+        gan = a1>a2?ida.j1 : a2>a1?ida.j2 : ida.j1;
       } else {
-        const m=par[0];
-        if(!m||m.ganador==null) return;
-        gan=m.ganador;
+        const m = par[0];
+        if(!m||m.ganador==null){ console.log(`R${ri}[${orden}] sin ganador`); return; }
+        gan = m.ganador;
       }
       if(!gan) return;
-      // Destino: partido Math.floor(orden/2) en ronda ri+1
-      const destOrden=Math.floor(orden/2);
-      const idx=partidos.findIndex(p=>p.rondaIdx===ri+1&&p.ordenEnRonda===destOrden);
+      const destOrden = Math.floor(orden/2);
+      const idx = partidos.findIndex(p=>p.rondaIdx===ri+1 && p.ordenEnRonda===destOrden);
+      console.log(`R${ri}[${orden}] ganador=${gan} -> R${ri+1}[${destOrden}] ${orden%2===0?'j1':'j2'} idx=${idx}`);
       if(idx<0) return;
-      // Par → j1, impar → j2
+      const dest = partidos[idx];
       if(orden%2===0){
-        partidos[idx]={...partidos[idx],j1:gan};
+        partidos[idx] = {...dest, j1:gan};
       } else {
-        partidos[idx]={...partidos[idx],j2:gan};
+        partidos[idx] = {...dest, j2:gan};
       }
+      console.log(`  Resultado: j1=${partidos[idx].j1} j2=${partidos[idx].j2}`);
     });
   }
 }
