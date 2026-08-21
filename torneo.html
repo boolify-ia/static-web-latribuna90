@@ -120,6 +120,26 @@
       .partido-card{flex-direction:column;text-align:center;}
       .partido-player.right{flex-direction:row;}
     }
+    /* BRACKET V2 */
+    .bracket-v2{display:flex;gap:0;align-items:stretch;overflow-x:auto;padding:1rem 0;}
+    .bracket-col{display:flex;flex-direction:column;min-width:170px;}
+    .bracket-col-title{font-family:var(--ff-sub,var(--S));font-size:.65rem;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);text-align:center;padding:.4rem .5rem;border-bottom:1px solid rgba(212,175,55,.2);margin-bottom:.5rem;}
+    .bracket-matches{display:flex;flex-direction:column;flex:1;justify-content:space-around;gap:8px;padding:0 6px;}
+    .bm-card{background:rgba(54,19,14,.8);border:1px solid rgba(212,175,55,.2);border-radius:.55rem;overflow:hidden;}
+    .bm-card:hover{border-color:rgba(212,175,55,.5);}
+    .bm-player{display:flex;align-items:center;gap:.45rem;padding:.42rem .6rem;border-bottom:1px solid rgba(255,255,255,.05);}
+    .bm-player:last-child{border-bottom:none;}
+    .bm-player.winner{background:rgba(49,75,54,.35);}
+    .bm-player.winner .bm-name{color:#81c784;font-weight:700;}
+    .bm-av{width:22px;height:22px;border-radius:50%;background:rgba(212,175,55,.15);display:flex;align-items:center;justify-content:center;font-family:var(--T);font-size:.8rem;color:var(--gold);flex-shrink:0;overflow:hidden;}
+    .bm-av img{width:100%;height:100%;object-fit:cover;}
+    .bm-name{flex:1;font-family:var(--S);font-size:.75rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+    .bm-score{font-family:var(--T);font-size:1rem;color:var(--gold);min-width:16px;text-align:right;}
+    .bm-score.win{color:#81c784;}
+    .bm-tbd{color:var(--muted);font-style:italic;font-size:.72rem;}
+    .final-col{min-width:190px;display:flex;flex-direction:column;align-items:center;justify-content:center;}
+    .final-col-title{font-family:var(--T);font-size:1.4rem;letter-spacing:.08em;color:var(--gold);text-align:center;margin-bottom:.5rem;}
+    .champion-mark{font-size:2rem;text-align:center;margin-bottom:.3rem;}
   </style>
 </head>
 <body>
@@ -273,28 +293,7 @@ function renderBracket(t){
   // Construir bracket tipo árbol
   // Mitad izquierda: partidos 0..N/2-1 de cada ronda
   // Mitad derecha: partidos N/2..N-1 de cada ronda (espejado)
-  let html = `<style>
-    .bracket-v2{display:flex;gap:0;align-items:stretch;overflow-x:auto;padding:1rem 0;}
-    .bracket-col{display:flex;flex-direction:column;min-width:170px;}
-    .bracket-col-title{font-family:var(--ff-sub,var(--S));font-size:.65rem;letter-spacing:.12em;text-transform:uppercase;color:var(--gold);text-align:center;padding:.4rem .5rem;border-bottom:1px solid rgba(212,175,55,.2);margin-bottom:.5rem;}
-    .bracket-matches{display:flex;flex-direction:column;flex:1;justify-content:space-around;gap:8px;padding:0 6px;}
-    .bm-card{background:rgba(54,19,14,.8);border:1px solid rgba(212,175,55,.2);border-radius:.55rem;overflow:hidden;}
-    .bm-card:hover{border-color:rgba(212,175,55,.5);}
-    .bm-player{display:flex;align-items:center;gap:.45rem;padding:.42rem .6rem;border-bottom:1px solid rgba(255,255,255,.05);}
-    .bm-player:last-child{border-bottom:none;}
-    .bm-player.winner{background:rgba(49,75,54,.35);}
-    .bm-player.winner .bm-name{color:#81c784;font-weight:700;}
-    .bm-av{width:22px;height:22px;border-radius:50%;background:rgba(212,175,55,.15);display:flex;align-items:center;justify-content:center;font-family:var(--T);font-size:.8rem;color:var(--gold);flex-shrink:0;overflow:hidden;}
-    .bm-av img{width:100%;height:100%;object-fit:cover;}
-    .bm-name{flex:1;font-family:var(--S);font-size:.75rem;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-    .bm-score{font-family:var(--T);font-size:1rem;color:var(--gold);min-width:16px;text-align:right;}
-    .bm-score.win{color:#81c784;}
-    .bm-tbd{color:var(--muted);font-style:italic;font-size:.72rem;}
-    .final-col{min-width:190px;display:flex;flex-direction:column;align-items:center;justify-content:center;}
-    .final-col-title{font-family:var(--T);font-size:1.4rem;letter-spacing:.08em;color:var(--gold);text-align:center;margin-bottom:.5rem;}
-    .champion-mark{font-size:2rem;text-align:center;margin-bottom:.3rem;}
-  </style>
-  <div class="bracket-v2">`;
+  let html = `<div class="bracket-v2">`;
 
   function bmCard(m, allPartidos){
     const j1=t.jugadores?.find(j=>j.id===m.j1), j2=t.jugadores?.find(j=>j.id===m.j2);
