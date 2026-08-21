@@ -163,7 +163,9 @@
 </div>
 
 <script>
+var _activeTab = 0;
 function switchTab(idx){
+  _activeTab = idx;
   var mc = document.getElementById('main-content');
   if(!mc) return;
   mc.querySelectorAll('.tab-content').forEach(function(el, i){
@@ -252,6 +254,8 @@ function render(t){
   });
 
   document.getElementById('main-content').innerHTML = html;
+  // Restaurar el tab que estaba activo antes del re-render
+  if(_activeTab > 0) switchTab(_activeTab);
 }
 
 function buildTabs(t){
