@@ -164,10 +164,12 @@
 
 <script>
 function switchTab(idx){
-  document.querySelectorAll('.tab-content').forEach(function(el, i){
-    el.classList.toggle('active', i===idx);
+  var mc = document.getElementById('main-content');
+  if(!mc) return;
+  mc.querySelectorAll('.tab-content').forEach(function(el, i){
+    el.style.display = (i===idx) ? 'block' : 'none';
   });
-  document.querySelectorAll('.tab').forEach(function(el, i){
+  mc.querySelectorAll('.tab').forEach(function(el, i){
     el.classList.toggle('active', i===idx);
   });
 }
@@ -242,11 +244,11 @@ function render(t){
   const tabs = buildTabs(t);
   const nTabs = tabs.length;
   html += '<div class="tabs">' + tabs.map(function(tb,i){ return '<button class="tab '+(i===0?'active':'')+'" id="tab-btn-'+i+'" onclick="switchTab('+i+')">'+tb.label+'</button>'; }).join('') + '</div>';
-  tabs.forEach((tb,i)=>{
-    let content = '';
+  tabs.forEach(function(tb,i){
+    var content = '';
     try { content = tb.content(t); } catch(e) { content = '<div class="empty">Error: '+e.message+'</div>'; console.error('Tab '+i+' error:', e); }
-    if(!content || content.trim()==='') content = '<div class="empty" style="color:red">TAB '+i+' VACÍO — '+tb.label+'</div>';
-    html += '<div class="tab-content ' + (i===0?'active':'') + '" id="tab-'+i+'">' + content + '</div>';
+    if(!content || content.trim()==='') content = '<div class="empty" style="color:red">TAB '+i+' VACÍO</div>';
+    html += '<div class="tab-content" id="tab-'+i+'" style="display:'+(i===0?'block':'none')+'">'+content+'</div>';
   });
 
   document.getElementById('main-content').innerHTML = html;
