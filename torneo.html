@@ -144,7 +144,9 @@
 </head>
 <body>
 
-<nav>
+<div id="tv-progress-wrap" style="position:fixed;top:0;left:0;width:100%;height:3px;background:rgba(212,175,55,.15);z-index:200">
+  <div id="tv-progress" style="height:100%;width:0%;background:var(--gold);transition:width 20s linear"></div>
+</div>
   <img src="https://boolify-ia.github.io/web-images/PNG/LOGOLATRIBUNA90BLNACO.png" alt="La Tribuna 90">
   <span>Torneo FIFA</span>
   <a href="index.html"><i class="fas fa-arrow-left"></i> Volver al sitio</a>
@@ -164,7 +166,10 @@
 
 <script>
 var _activeTab = 0;
-function switchTab(idx){
+var _totalTabs = 0;
+var _autoRotate = null;
+
+function switchTab(idx, manual){
   _activeTab = idx;
   var mc = document.getElementById('main-content');
   if(!mc) return;
@@ -174,6 +179,39 @@ function switchTab(idx){
   mc.querySelectorAll('.tab').forEach(function(el, i){
     el.classList.toggle('active', i===idx);
   });
+  // Actualizar barra de progreso
+  updateProgressBar();
+  // Si el usuario hizo clic manualmente, reiniciar el timer
+  if(manual) restartAutoRotate();
+}
+
+function updateProgressBar(){
+  var bar = document.getElementById('tv-progress');
+  if(!bar) return;
+  bar.style.transition = 'none';
+  bar.style.width = '0%';
+  // Forzar reflow para reiniciar la animación
+  bar.offsetHeight;
+  bar.style.transition = 'width 20s linear';
+  bar.style.width = '100%';
+}
+
+function nextTab(){
+  if(_totalTabs === 0) return;
+  var next = (_activeTab + 1) % _totalTabs;
+  switchTab(next, false);
+}
+
+function restartAutoRotate(){
+  if(_autoRotate) clearInterval(_autoRotate);
+  _autoRotate = setInterval(nextTab, 20000);
+}
+
+function startAutoRotate(total){
+  _totalTabs = total;
+  if(_autoRotate) clearInterval(_autoRotate);
+  _autoRotate = setInterval(nextTab, 20000);
+  updateProgressBar();
 }
 </script>
 
@@ -245,7 +283,7 @@ function render(t){
   // Tabs según formato
   const tabs = buildTabs(t);
   const nTabs = tabs.length;
-  html += '<div class="tabs">' + tabs.map(function(tb,i){ return '<button class="tab '+(i===0?'active':'')+'" id="tab-btn-'+i+'" onclick="switchTab('+i+')">'+tb.label+'</button>'; }).join('') + '</div>';
+  html += '<div class="tabs">' + tabs.map(function(tb,i){ return '<button class="tab '+(i===0?'active':'')+'" id="tab-btn-'+i+'" onclick="switchTab('+i+',true)">'+tb.label+'</button>'; }).join('') + '</div>';
   tabs.forEach(function(tb,i){
     var content = '';
     try { content = tb.content(t); } catch(e) { content = '<div class="empty">Error: '+e.message+'</div>'; console.error('Tab '+i+' error:', e); }
@@ -254,8 +292,11 @@ function render(t){
   });
 
   document.getElementById('main-content').innerHTML = html;
-  // Restaurar tab activo en siguiente ciclo del event loop
-  if(_activeTab > 0) setTimeout(function(){ switchTab(_activeTab); }, 0);
+  // Restaurar tab activo y arrancar/continuar rotación automática
+  setTimeout(function(){
+    if(_activeTab > 0) switchTab(_activeTab, false);
+    startAutoRotate(tabs.length);
+  }, 0);
 }
 
 function buildTabs(t){
