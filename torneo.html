@@ -162,6 +162,17 @@
   </div>
 </div>
 
+<script>
+function switchTab(idx, total){
+  for(var i=0; i<total; i++){
+    var btn = document.getElementById('tab-btn-'+i);
+    var content = document.getElementById('tab-'+i);
+    if(btn) btn.classList.toggle('active', i===idx);
+    if(content) content.classList.toggle('active', i===idx);
+  }
+}
+</script>
+
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getFirestore, doc, getDoc, collection, query, orderBy, onSnapshot } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
@@ -239,14 +250,6 @@ function render(t){
   });
 
   document.getElementById('main-content').innerHTML = html;
-  window.switchTab = function(idx, total){
-    for(let i=0; i<total; i++){
-      const btn = document.getElementById('tab-btn-'+i);
-      const content = document.getElementById('tab-'+i);
-      if(btn) btn.classList.toggle('active', i===idx);
-      if(content) content.classList.toggle('active', i===idx);
-    }
-  };
 }
 
 function buildTabs(t){
