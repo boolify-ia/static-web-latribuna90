@@ -229,18 +229,22 @@ function render(t){
 
   // Tabs según formato
   const tabs = buildTabs(t);
-  const tabIds = tabs.map((_,i)=>`tab-${i}`);
-  html += `<div class="tabs">${tabs.map((tb,i)=>`<button class="tab ${i===0?'active':''}" id="tab-btn-${i}" onclick="switchTab(${i})">${tb.label}</button>`).join('')}</div>`;
-  tabs.forEach((tb,i)=>{ html += `<div class="tab-content ${i===0?'active':''}" id="tab-${i}">${tb.content(t)}</div>`; });
+  const nTabs = tabs.length;
+  html += `<div class="tabs">${tabs.map((tb,i)=>`<button class="tab ${i===0?'active':''}" id="tab-btn-${i}" onclick="switchTab(${i},${nTabs})">${tb.label}</button>`).join('')}</div>`;
+  tabs.forEach((tb,i)=>{
+    let content = '';
+    try { content = tb.content(t); } catch(e) { content = '<div class="empty">Error: '+e.message+'</div>'; console.error('Tab '+i+' error:', e); }
+    html += '<div class="tab-content ' + (i===0?'active':'') + '" id="tab-'+i+'">' + content + '</div>';
+  });
 
   document.getElementById('main-content').innerHTML = html;
-  window.switchTab = function(idx){
-    tabs.forEach((_,i)=>{
-      const btn = document.getElementById(`tab-btn-${i}`);
-      const content = document.getElementById(`tab-${i}`);
+  window.switchTab = function(idx, total){
+    for(let i=0; i<total; i++){
+      const btn = document.getElementById('tab-btn-'+i);
+      const content = document.getElementById('tab-'+i);
       if(btn) btn.classList.toggle('active', i===idx);
       if(content) content.classList.toggle('active', i===idx);
-    });
+    }
   };
 }
 
