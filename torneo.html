@@ -254,8 +254,8 @@ function render(t){
   });
 
   document.getElementById('main-content').innerHTML = html;
-  // Restaurar el tab que estaba activo antes del re-render
-  if(_activeTab > 0) switchTab(_activeTab);
+  // Restaurar tab activo en siguiente ciclo del event loop
+  if(_activeTab > 0) setTimeout(function(){ switchTab(_activeTab); }, 0);
 }
 
 function buildTabs(t){
