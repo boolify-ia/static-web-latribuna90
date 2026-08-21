@@ -229,13 +229,18 @@ function render(t){
 
   // Tabs según formato
   const tabs = buildTabs(t);
-  html += `<div class="tabs">${tabs.map((tb,i)=>`<button class="tab ${i===0?'active':''}" onclick="switchTab(${i})">${tb.label}</button>`).join('')}</div>`;
+  const tabIds = tabs.map((_,i)=>`tab-${i}`);
+  html += `<div class="tabs">${tabs.map((tb,i)=>`<button class="tab ${i===0?'active':''}" id="tab-btn-${i}" onclick="switchTab(${i})">${tb.label}</button>`).join('')}</div>`;
   tabs.forEach((tb,i)=>{ html += `<div class="tab-content ${i===0?'active':''}" id="tab-${i}">${tb.content(t)}</div>`; });
 
   document.getElementById('main-content').innerHTML = html;
-  window.switchTab = function(i){
-    document.querySelectorAll('.tab').forEach((b,j)=>b.classList.toggle('active',j===i));
-    document.querySelectorAll('.tab-content').forEach((c,j)=>c.classList.toggle('active',j===i));
+  window.switchTab = function(idx){
+    tabs.forEach((_,i)=>{
+      const btn = document.getElementById(`tab-btn-${i}`);
+      const content = document.getElementById(`tab-${i}`);
+      if(btn) btn.classList.toggle('active', i===idx);
+      if(content) content.classList.toggle('active', i===idx);
+    });
   };
 }
 
