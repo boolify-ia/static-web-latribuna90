@@ -234,6 +234,7 @@ function render(t){
   tabs.forEach((tb,i)=>{
     let content = '';
     try { content = tb.content(t); } catch(e) { content = '<div class="empty">Error: '+e.message+'</div>'; console.error('Tab '+i+' error:', e); }
+    if(!content || content.trim()==='') content = '<div class="empty" style="color:red">TAB '+i+' VACÍO — '+tb.label+'</div>';
     html += '<div class="tab-content ' + (i===0?'active':'') + '" id="tab-'+i+'">' + content + '</div>';
   });
 
