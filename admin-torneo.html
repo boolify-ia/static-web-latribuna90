@@ -151,7 +151,26 @@
         <div id="add-player-form" style="display:none;margin-bottom:.75rem">
           <div class="row" style="margin-bottom:.5rem">
             <div class="field"><label>Nombre *</label><input id="p-nombre" type="text" placeholder="Apodo del jugador"></div>
-            <div class="field"><label>URL Foto (opcional)</label><input id="p-foto" type="url" placeholder="https://..."></div>
+            <div class="field">
+              <label>Foto (opcional)</label>
+              <div style="display:flex;gap:.5rem;align-items:center">
+                <div id="foto-preview" style="width:48px;height:48px;border-radius:50%;background:rgba(212,175,55,.15);border:2px solid rgba(212,175,55,.3);display:flex;align-items:center;justify-content:center;font-size:1.4rem;color:var(--gold);flex-shrink:0;overflow:hidden">📷</div>
+                <div style="display:flex;flex-direction:column;gap:.35rem;flex:1">
+                  <button class="btn btn-outline btn-sm" onclick="abrirCamara()" type="button"><i class="fas fa-camera"></i> Tomar foto</button>
+                  <button class="btn btn-outline btn-sm" onclick="document.getElementById('p-foto-file').click()" type="button"><i class="fas fa-upload"></i> Subir archivo</button>
+                  <input id="p-foto-file" type="file" accept="image/*" style="display:none" onchange="previsualizarFoto(this)">
+                </div>
+              </div>
+            </div>
+          </div>
+          <!-- Cámara -->
+          <div id="camara-wrap" style="display:none;margin-bottom:.75rem">
+            <video id="camara-video" autoplay playsinline style="width:100%;max-width:320px;border-radius:.6rem;border:1px solid rgba(212,175,55,.3)"></video>
+            <div style="display:flex;gap:.5rem;margin-top:.5rem">
+              <button class="btn btn-gold btn-sm" onclick="capturarFoto()" type="button"><i class="fas fa-camera"></i> Capturar</button>
+              <button class="btn btn-outline btn-sm" onclick="cerrarCamara()" type="button"><i class="fas fa-times"></i> Cancelar</button>
+            </div>
+            <canvas id="camara-canvas" style="display:none"></canvas>
           </div>
           <button class="btn btn-green btn-sm" onclick="agregarJugador()"><i class="fas fa-user-plus"></i> Agregar jugador</button>
           <p class="msg" id="player-msg" style="display:none;margin-top:.4rem"></p>
@@ -226,6 +245,7 @@ function cerrarModal(){
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getFirestore, doc, getDoc, setDoc, updateDoc, addDoc, getDocs, deleteDoc, collection, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
 
 const db = getFirestore(initializeApp({
   apiKey:"AIzaSyDpSwCwCwGtm2EXML5HWFrajqfKeZMff48",
@@ -235,6 +255,61 @@ const db = getFirestore(initializeApp({
   messagingSenderId:"961712839386",
   appId:"1:961712839386:web:94e1a3f6a000c7d9a823e3"
 }));
+const storage = getStorage();
+
+// ── FOTO: estado temporal ──────────────────────────────────
+let _fotoBlob = null;
+let _streamActivo = null;
+
+window.previsualizarFoto = function(input){
+  const file = input.files[0];
+  if(!file) return;
+  _fotoBlob = file;
+  const url = URL.createObjectURL(file);
+  const prev = document.getElementById('foto-preview');
+  prev.innerHTML = '<img src="'+url+'" style="width:100%;height:100%;object-fit:cover">';
+};
+
+window.abrirCamara = async function(){
+  const wrap = document.getElementById('camara-wrap');
+  const video = document.getElementById('camara-video');
+  try{
+    _streamActivo = await navigator.mediaDevices.getUserMedia({video:{facingMode:'user'}, audio:false});
+    video.srcObject = _streamActivo;
+    wrap.style.display = 'block';
+  }catch(e){
+    alert('No se pudo acceder a la cámara: '+e.message);
+  }
+};
+
+window.capturarFoto = function(){
+  const video = document.getElementById('camara-video');
+  const canvas = document.getElementById('camara-canvas');
+  canvas.width = video.videoWidth;
+  canvas.height = video.videoHeight;
+  canvas.getContext('2d').drawImage(video, 0, 0);
+  canvas.toBlob(function(blob){
+    _fotoBlob = blob;
+    const url = URL.createObjectURL(blob);
+    document.getElementById('foto-preview').innerHTML = '<img src="'+url+'" style="width:100%;height:100%;object-fit:cover">';
+    cerrarCamara();
+  }, 'image/jpeg', 0.85);
+};
+
+window.cerrarCamara = function(){
+  if(_streamActivo){ _streamActivo.getTracks().forEach(t=>t.stop()); _streamActivo=null; }
+  document.getElementById('camara-wrap').style.display='none';
+  document.getElementById('camara-video').srcObject=null;
+};
+
+async function subirFoto(nombre){
+  if(!_fotoBlob) return null;
+  const ext = _fotoBlob.type === 'image/png' ? 'png' : 'jpg';
+  const path = 'jugadores/'+nombre.toLowerCase().replace(/\s+/g,'-')+'-'+Date.now()+'.'+ext;
+  const storageRef = ref(storage, path);
+  await uploadBytes(storageRef, _fotoBlob);
+  return await getDownloadURL(storageRef);
+}
 
 // ── Esperar login antes de inicializar ──
 document.addEventListener('admin-ready', () => {
@@ -360,17 +435,28 @@ window.borrarTorneo = async function(id){
 // ══════════════════════════════════════════════
 window.agregarJugador = async function(){
   const nombre = document.getElementById('p-nombre').value.trim();
-  const foto = document.getElementById('p-foto').value.trim();
   const msg = document.getElementById('player-msg');
   if(!nombre){ showMsg(msg,'err','El nombre es obligatorio'); return; }
-  const id='j-'+Date.now().toString(36);
-  const jugadores=[...(T.jugadores||[]),{id,nombre,foto:foto||null}];
-  await updateDoc(doc(db,'torneos',T.id),{jugadores});
-  T.jugadores=jugadores;
-  document.getElementById('p-nombre').value='';
-  document.getElementById('p-foto').value='';
-  renderJugadores(); updateCampeonSelect();
-  showMsg(msg,'ok',`✅ ${nombre} agregado`);
+  const btn = document.querySelector('#add-player-form .btn-green');
+  btn.disabled=true; btn.textContent='Guardando...';
+  try{
+    let fotoUrl = null;
+    if(_fotoBlob){
+      showMsg(msg,'ok','Subiendo foto...');
+      fotoUrl = await subirFoto(nombre);
+    }
+    const id='j-'+Date.now().toString(36);
+    const jugadores=[...(T.jugadores||[]),{id,nombre,foto:fotoUrl}];
+    await updateDoc(doc(db,'torneos',T.id),{jugadores});
+    T.jugadores=jugadores;
+    document.getElementById('p-nombre').value='';
+    document.getElementById('foto-preview').innerHTML='📷';
+    document.getElementById('p-foto-file').value='';
+    _fotoBlob=null;
+    renderJugadores(); updateCampeonSelect();
+    showMsg(msg,'ok','✅ '+nombre+' agregado');
+  }catch(e){ showMsg(msg,'err','Error: '+e.message); console.error(e); }
+  finally{ btn.disabled=false; btn.innerHTML='<i class="fas fa-user-plus"></i> Agregar jugador'; }
 };
 
 function renderJugadores(){
