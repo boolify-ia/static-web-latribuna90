@@ -245,7 +245,6 @@ function cerrarModal(){
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getFirestore, doc, getDoc, setDoc, updateDoc, addDoc, getDocs, deleteDoc, collection, query, orderBy, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-import { getStorage, ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-storage.js";
 
 const db = getFirestore(initializeApp({
   apiKey:"AIzaSyDpSwCwCwGtm2EXML5HWFrajqfKeZMff48",
@@ -255,7 +254,10 @@ const db = getFirestore(initializeApp({
   messagingSenderId:"961712839386",
   appId:"1:961712839386:web:94e1a3f6a000c7d9a823e3"
 }));
-const storage = getStorage();
+
+// ── CLOUDINARY CONFIG ──────────────────────────────────────
+const CLOUDINARY_CLOUD = 'TU_CLOUD_NAME';
+const CLOUDINARY_PRESET = 'TU_UPLOAD_PRESET';
 
 // ── FOTO: estado temporal ──────────────────────────────────
 let _fotoBlob = null;
@@ -266,8 +268,7 @@ window.previsualizarFoto = function(input){
   if(!file) return;
   _fotoBlob = file;
   const url = URL.createObjectURL(file);
-  const prev = document.getElementById('foto-preview');
-  prev.innerHTML = '<img src="'+url+'" style="width:100%;height:100%;object-fit:cover">';
+  document.getElementById('foto-preview').innerHTML = '<img src="'+url+'" style="width:100%;height:100%;object-fit:cover">';
 };
 
 window.abrirCamara = async function(){
@@ -302,13 +303,18 @@ window.cerrarCamara = function(){
   document.getElementById('camara-video').srcObject=null;
 };
 
-async function subirFoto(nombre){
+async function subirFoto(){
   if(!_fotoBlob) return null;
-  const ext = _fotoBlob.type === 'image/png' ? 'png' : 'jpg';
-  const path = 'jugadores/'+nombre.toLowerCase().replace(/\s+/g,'-')+'-'+Date.now()+'.'+ext;
-  const storageRef = ref(storage, path);
-  await uploadBytes(storageRef, _fotoBlob);
-  return await getDownloadURL(storageRef);
+  const formData = new FormData();
+  formData.append('file', _fotoBlob);
+  formData.append('upload_preset', CLOUDINARY_PRESET);
+  formData.append('folder', 'jugadores');
+  const res = await fetch('https://api.cloudinary.com/v1_1/'+CLOUDINARY_CLOUD+'/image/upload', {
+    method:'POST', body:formData
+  });
+  if(!res.ok) throw new Error('Error subiendo foto a Cloudinary');
+  const data = await res.json();
+  return data.secure_url;
 }
 
 // ── Esperar login antes de inicializar ──
@@ -443,7 +449,7 @@ window.agregarJugador = async function(){
     let fotoUrl = null;
     if(_fotoBlob){
       showMsg(msg,'ok','Subiendo foto...');
-      fotoUrl = await subirFoto(nombre);
+      fotoUrl = await subirFoto();
     }
     const id='j-'+Date.now().toString(36);
     const jugadores=[...(T.jugadores||[]),{id,nombre,foto:fotoUrl}];
