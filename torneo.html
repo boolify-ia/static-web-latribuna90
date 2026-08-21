@@ -535,12 +535,15 @@ function partidoCard(p, t, jugado, numPartido=null, consola=null){
 
 // ── JUGADORES ──────────────────────────────────────────────
 function renderJugadores(t){
-  if(!t.jugadores||!t.jugadores.length) return '<div class="empty">No hay jugadores registrados</div>';
+  const js = t.jugadores||[];
+  console.log('renderJugadores:', js.length, js);
+  if(!js.length) return '<div class="empty">No hay jugadores registrados</div>';
   let html = '<div class="players-grid">';
-  t.jugadores.forEach((j,i)=>{
+  js.forEach((j,i)=>{
+    const inicial = j.nombre ? j.nombre.charAt(0).toUpperCase() : '?';
     html += `<div class="player-card">
-      <div class="avatar">${j.foto?`<img src="${j.foto}">`:`<span>${j.nombre?.[0]||'?'}</span>`}</div>
-      <div class="pname">${j.nombre}</div>
+      <div class="avatar">${j.foto?`<img src="${j.foto}">`:`<span>${inicial}</span>`}</div>
+      <div class="pname">${j.nombre||'Sin nombre'}</div>
       <div class="pseed">Cabeza de serie #${i+1}</div>
     </div>`;
   });
