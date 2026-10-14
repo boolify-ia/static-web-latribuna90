@@ -646,8 +646,19 @@ button { font-family: var(--ff-body); }
   font-size: 1rem;
   font-weight: 600;
   color: var(--cream);
-  margin-bottom: .3rem;
+  margin-bottom: .15rem;
   letter-spacing: .02em;
+}
+.card-subtitle {
+  display: block;
+  font-family: var(--ff-sub);
+  font-size: .7rem;
+  font-weight: 600;
+  letter-spacing: .1em;
+  text-transform: uppercase;
+  color: var(--gold);
+  margin-bottom: .35rem;
+  opacity: .85;
 }
 .card-body p {
   font-size: .83rem;
