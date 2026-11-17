@@ -1914,3 +1914,43 @@ button { font-family: var(--ff-body); }
   .news-ctas { flex-direction: column; }
   .news-ctas .btn { text-align: center; justify-content: center; }
 }
+
+/* ── POLLA DE PARTIDOS ───────────────────────────── */
+.polla-section {
+  padding: 5rem 0;
+  background: linear-gradient(135deg, #0d1a0f 0%, #0d0d0d 60%, #1a1200 100%);
+  border-top: 1px solid #1e2e1e;
+  border-bottom: 1px solid #1e2e1e;
+  text-align: center;
+}
+.polla-cta-wrap {
+  max-width: 560px;
+  margin: 2rem auto 0;
+}
+.polla-features {
+  display: flex;
+  justify-content: center;
+  gap: 2rem;
+  flex-wrap: wrap;
+  margin-bottom: 2rem;
+}
+.polla-feat {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: .5rem;
+  font-family: var(--ff-sub);
+  font-size: .85rem;
+  opacity: .75;
+  letter-spacing: .06em;
+  text-transform: uppercase;
+}
+.polla-feat i {
+  font-size: 1.5rem;
+  color: var(--gold);
+  opacity: 1;
+}
+.btn-polla {
+  font-size: 1.05rem;
+  padding: .9rem 2.5rem;
+}
