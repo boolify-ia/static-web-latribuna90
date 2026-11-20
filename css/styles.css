@@ -273,7 +273,7 @@ button { font-family: var(--ff-body); }
   position: relative;
   z-index: 2;
   text-align: center;
-  padding: 7rem 1.5rem 5rem;
+  padding: 7rem 1.5rem 9rem;
 }
 
 .hero-badge {
@@ -321,7 +321,7 @@ button { font-family: var(--ff-body); }
 /* Scoreboard */
 .hero-scoreboard {
   position: absolute;
-  bottom: 2.5rem; left: 50%;
+  bottom: 1.5rem; left: 50%;
   transform: translateX(-50%);
   display: flex;
   align-items: center;
