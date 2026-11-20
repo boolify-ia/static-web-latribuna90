@@ -223,14 +223,15 @@
         </div>
       </div>
       <div class="carta-modal-body">
-        <iframe src="carta-la-tribuna-90.pdf#toolbar=0&navpanes=0&scrollbar=1"
-          class="carta-iframe" title="Carta La Tribuna 90"></iframe>
-        <div class="carta-mobile-fallback">
-          <i class="fas fa-file-pdf" style="font-size:3rem;color:var(--gold);margin-bottom:1rem"></i>
-          <p>Tu navegador no puede mostrar el PDF aquí.</p>
-          <a href="carta-la-tribuna-90.pdf" target="_blank" class="btn btn-primary" style="margin-top:.8rem">
-            <i class="fas fa-external-link-alt"></i>&nbsp; Abrir carta
-          </a>
+        <div class="carta-pdf-toolbar">
+          <button class="pdf-nav-btn" id="pdf-prev" title="Página anterior"><i class="fas fa-chevron-left"></i></button>
+          <span class="pdf-page-info"><span id="pdf-page-num">1</span> / <span id="pdf-page-total">?</span></span>
+          <button class="pdf-nav-btn" id="pdf-next" title="Página siguiente"><i class="fas fa-chevron-right"></i></button>
+          <button class="pdf-nav-btn" id="pdf-zoom-out" title="Alejar"><i class="fas fa-search-minus"></i></button>
+          <button class="pdf-nav-btn" id="pdf-zoom-in" title="Acercar"><i class="fas fa-search-plus"></i></button>
+        </div>
+        <div class="carta-canvas-wrap" id="carta-canvas-wrap">
+          <canvas id="carta-canvas"></canvas>
         </div>
       </div>
     </div>
@@ -639,13 +640,84 @@
   <!-- Scripts -->
   <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
   <script src="js/main.js"></script>
-  <script>
-    // Cerrar modal carta con ESC o clic fuera
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.min.mjs" type="module"></script>
+  <script type="module">
+    // PDF.js via CDN
+    const { getDocument, GlobalWorkerOptions } = await import('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.min.mjs');
+    GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.worker.min.mjs';
+
+    const PDF_URL = 'carta-la-tribuna-90.pdf';
+    let pdfDoc = null, pageNum = 1, pageRendering = false, scale = 1.0;
+    const canvas = document.getElementById('carta-canvas');
+    const ctx = canvas.getContext('2d');
+    const wrap = document.getElementById('carta-canvas-wrap');
+
+    async function renderPage(num) {
+      if (pageRendering) return;
+      pageRendering = true;
+      const page = await pdfDoc.getPage(num);
+      const wrapW = wrap.clientWidth || 360;
+      const viewport = page.getViewport({ scale: 1 });
+      const autoScale = (wrapW / viewport.width) * scale;
+      const vp = page.getViewport({ scale: autoScale });
+      canvas.width  = vp.width;
+      canvas.height = vp.height;
+      await page.render({ canvasContext: ctx, viewport: vp }).promise;
+      pageRendering = false;
+      document.getElementById('pdf-page-num').textContent = num;
+    }
+
+    async function loadPDF() {
+      pdfDoc = await getDocument(PDF_URL).promise;
+      document.getElementById('pdf-page-total').textContent = pdfDoc.numPages;
+      renderPage(pageNum);
+    }
+
+    document.getElementById('pdf-prev').addEventListener('click', () => {
+      if (pageNum <= 1) return;
+      pageNum--;
+      renderPage(pageNum);
+      wrap.scrollTop = 0;
+    });
+    document.getElementById('pdf-next').addEventListener('click', () => {
+      if (pageNum >= pdfDoc.numPages) return;
+      pageNum++;
+      renderPage(pageNum);
+      wrap.scrollTop = 0;
+    });
+    document.getElementById('pdf-zoom-in').addEventListener('click', () => {
+      scale = Math.min(scale + 0.25, 3);
+      renderPage(pageNum);
+    });
+    document.getElementById('pdf-zoom-out').addEventListener('click', () => {
+      scale = Math.max(scale - 0.25, 0.5);
+      renderPage(pageNum);
+    });
+
+    // Swipe en móvil
+    let touchStartX = 0;
+    canvas.addEventListener('touchstart', e => { touchStartX = e.touches[0].clientX; });
+    canvas.addEventListener('touchend', e => {
+      const dx = e.changedTouches[0].clientX - touchStartX;
+      if (Math.abs(dx) > 50) {
+        if (dx < 0 && pageNum < pdfDoc.numPages) { pageNum++; renderPage(pageNum); wrap.scrollTop = 0; }
+        if (dx > 0 && pageNum > 1)               { pageNum--; renderPage(pageNum); wrap.scrollTop = 0; }
+      }
+    });
+
+    // Abrir modal → cargar PDF la primera vez
     document.getElementById('carta-modal').addEventListener('click', function(e) {
       if (e.target === this) this.classList.remove('open');
     });
-    document.addEventListener('keydown', function(e) {
-      if (e.key === 'Escape') document.getElementById('carta-modal').classList.remove('open');
+    document.querySelectorAll('[onclick*="carta-modal"]').forEach(btn => {
+      btn.addEventListener('click', () => { if (!pdfDoc) loadPDF(); });
+    });
+    document.addEventListener('keydown', e => {
+      const modal = document.getElementById('carta-modal');
+      if (!modal.classList.contains('open')) return;
+      if (e.key === 'Escape') modal.classList.remove('open');
+      if (e.key === 'ArrowRight' && pageNum < pdfDoc?.numPages) { pageNum++; renderPage(pageNum); wrap.scrollTop = 0; }
+      if (e.key === 'ArrowLeft'  && pageNum > 1)                { pageNum--; renderPage(pageNum); wrap.scrollTop = 0; }
     });
   </script>
 </body>

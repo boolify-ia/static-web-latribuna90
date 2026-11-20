@@ -2050,33 +2050,64 @@ button { font-family: var(--ff-body); }
   display: flex;
   flex-direction: column;
   padding: 0;
+  overflow: hidden;
 }
-.carta-iframe {
-  width: 100%;
-  flex: 1;
-  min-height: 80vh;
-  border: none;
-  border-radius: 0 0 10px 10px;
-  display: block;
+/* Toolbar de navegación PDF */
+.carta-pdf-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: .5rem;
+  padding: .6rem 1rem;
+  background: #111;
+  border-bottom: 1px solid #2a2a2a;
+  flex-shrink: 0;
 }
-/* En móvil muy pequeño, mostrar fallback si iframe no carga */
-.carta-mobile-fallback {
-  display: none;
-  text-align: center;
-  padding: 3rem 1rem;
+.pdf-nav-btn {
+  background: var(--dark3);
+  border: 1px solid #3a3a3a;
+  color: var(--white);
+  border-radius: 5px;
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: .85rem;
+  transition: all .2s;
+}
+.pdf-nav-btn:hover { border-color: var(--gold); color: var(--gold); }
+.pdf-nav-btn:disabled { opacity: .3; cursor: not-allowed; }
+.pdf-page-info {
   font-family: var(--ff-sub);
-  opacity: .8;
+  font-size: .85rem;
+  color: var(--gold);
+  min-width: 60px;
+  text-align: center;
+  letter-spacing: .05em;
+}
+/* Canvas wrap scrollable */
+.carta-canvas-wrap {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: auto;
+  background: #222;
+  display: flex;
+  justify-content: center;
+  align-items: flex-start;
+  padding: 1rem;
+  border-radius: 0 0 10px 10px;
+  -webkit-overflow-scrolling: touch;
+}
+#carta-canvas {
+  max-width: 100%;
+  height: auto;
+  display: block;
+  box-shadow: 0 4px 24px rgba(0,0,0,.5);
 }
 @media (max-width: 480px) {
-  .carta-modal-overlay {
-    padding: 0;
-  }
-  .carta-modal {
-    border-radius: 0;
-    min-height: 100vh;
-  }
-  .carta-iframe {
-    min-height: 75vh;
-    border-radius: 0;
-  }
+  .carta-modal-overlay { padding: 0; }
+  .carta-modal { border-radius: 0; min-height: 100vh; }
+  .carta-canvas-wrap { border-radius: 0; padding: .5rem; }
 }
