@@ -1954,3 +1954,129 @@ button { font-family: var(--ff-body); }
   font-size: 1.05rem;
   padding: .9rem 2.5rem;
 }
+
+/* ── CARTA PDF ───────────────────────────────────── */
+.carta-pdf-section {
+  padding: 5rem 0;
+  text-align: center;
+}
+.carta-actions {
+  display: flex;
+  justify-content: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-top: 2rem;
+}
+.btn-lg {
+  font-size: 1.05rem;
+  padding: .9rem 2.2rem;
+}
+
+/* Modal overlay */
+.carta-modal-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,.85);
+  z-index: 2000;
+  display: none;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 1rem;
+  overflow-y: auto;
+}
+.carta-modal-overlay.open {
+  display: flex;
+}
+.carta-modal {
+  background: #1a1a1a;
+  border: 1px solid #333;
+  border-radius: 10px;
+  width: 100%;
+  max-width: 860px;
+  min-height: 90vh;
+  display: flex;
+  flex-direction: column;
+  margin: auto;
+}
+.carta-modal-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: .9rem 1.2rem;
+  border-bottom: 1px solid #2a2a2a;
+  position: sticky;
+  top: 0;
+  background: #1a1a1a;
+  z-index: 1;
+  border-radius: 10px 10px 0 0;
+}
+.carta-modal-title {
+  font-family: var(--ff-sub);
+  font-size: 1rem;
+  font-weight: 700;
+  color: var(--gold);
+  letter-spacing: .06em;
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+}
+.carta-modal-actions {
+  display: flex;
+  gap: .5rem;
+}
+.btn-modal-dl,
+.btn-modal-close {
+  background: none;
+  border: 1px solid #3a3a3a;
+  color: #ccc;
+  border-radius: 5px;
+  width: 34px;
+  height: 34px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  font-size: .9rem;
+  text-decoration: none;
+  transition: all .2s;
+}
+.btn-modal-dl:hover,
+.btn-modal-close:hover {
+  border-color: var(--gold);
+  color: var(--gold);
+}
+.carta-modal-body {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 0;
+}
+.carta-iframe {
+  width: 100%;
+  flex: 1;
+  min-height: 80vh;
+  border: none;
+  border-radius: 0 0 10px 10px;
+  display: block;
+}
+/* En móvil muy pequeño, mostrar fallback si iframe no carga */
+.carta-mobile-fallback {
+  display: none;
+  text-align: center;
+  padding: 3rem 1rem;
+  font-family: var(--ff-sub);
+  opacity: .8;
+}
+@media (max-width: 480px) {
+  .carta-modal-overlay {
+    padding: 0;
+  }
+  .carta-modal {
+    border-radius: 0;
+    min-height: 100vh;
+  }
+  .carta-iframe {
+    min-height: 75vh;
+    border-radius: 0;
+  }
+}
