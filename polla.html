@@ -163,7 +163,7 @@
       <li><i class="fas fa-check"></i> Ingresa el marcador exacto de cada partido antes de que empiece</li>
       <li><i class="fas fa-check"></i> <strong>1 punto</strong> por cada marcador exacto acertado (p.ej. Colombia 2 – Argentina 1)</li>
       <li><i class="fas fa-check"></i> <strong>0 puntos</strong> si el marcador no es exacto, aunque aciertes el ganador</li>
-      <li><i class="fas fa-check"></i> Solo se permite <strong>una participación por correo</strong> por ronda</li>
+      <li><i class="fas fa-check"></i> Solo se permite <strong>una participación por correo y celular</strong> por ronda</li>
       <li><i class="fas fa-check"></i> Los puntos del mes se acumulan en el <a href="ranking.html" style="color:var(--gold)">ranking mensual</a></li>
       <li><i class="fas fa-check"></i> Los premios se reclaman directamente en La Tribuna 90 mostrando tu correo</li>
     </ul>
@@ -219,6 +219,9 @@ async function init() {
   }
 }
 
+// ── SEGURIDAD: timestamp de apertura del formulario ───────
+let _formOpenedAt = 0;
+
 function renderForm() {
   if (partidos.length === 0) {
     app.innerHTML = `
@@ -228,6 +231,8 @@ function renderForm() {
       </div>`;
     return;
   }
+
+  _formOpenedAt = Date.now();
 
   app.innerHTML = `
     <div class="card">
@@ -249,6 +254,10 @@ function renderForm() {
         </div>
       </div>
       <div id="err-datos" class="error-msg"></div>
+      <!-- Honeypot: campo oculto — los bots lo llenan, humanos no -->
+      <div style="display:none;visibility:hidden;position:absolute;left:-9999px" aria-hidden="true">
+        <input type="text" id="f-website" name="website" tabindex="-1" autocomplete="off"/>
+      </div>
     </div>
 
     <div class="card">
@@ -295,6 +304,26 @@ function renderForm() {
   });
 }
 
+// ── RATE LIMITING LOCAL ────────────────────────────────────
+const RL_KEY = 'lt90_polla_last_submit';
+const RL_MS  = 30 * 60 * 1000; // 30 minutos
+
+function rlBlocked() {
+  try {
+    const last = parseInt(localStorage.getItem(RL_KEY) || '0');
+    return last && (Date.now() - last) < RL_MS;
+  } catch { return false; }
+}
+function rlRecord() {
+  try { localStorage.setItem(RL_KEY, String(Date.now())); } catch {}
+}
+function rlMinutesLeft() {
+  try {
+    const last = parseInt(localStorage.getItem(RL_KEY) || '0');
+    return Math.ceil((RL_MS - (Date.now() - last)) / 60000);
+  } catch { return 30; }
+}
+
 // ── ENVÍO ──────────────────────────────────────────────────
 window._enviar = async function() {
   const btn = document.getElementById('btn-enviar');
@@ -303,9 +332,36 @@ window._enviar = async function() {
   errD.classList.remove('show');
   errG.classList.remove('show');
 
+  // ── 1. HONEYPOT: si el campo oculto tiene algo, es un bot ──
+  const honeypot = document.getElementById('f-website');
+  if (honeypot && honeypot.value) {
+    // Fallo silencioso: simular éxito para no revelar la trampa
+    app.innerHTML = `
+      <div class="success-state">
+        <div class="icon">🏆</div>
+        <h3>¡Pronósticos enviados!</h3>
+        <p>Gracias, tus predicciones quedaron registradas.</p>
+      </div>`;
+    return;
+  }
+
+  // ── 2. TIEMPO MÍNIMO EN FORMULARIO (anti-bot) ──────────────
+  if (_formOpenedAt && (Date.now() - _formOpenedAt) < 5000) {
+    errG.textContent = 'Por favor revisa tus pronósticos antes de enviar.';
+    errG.classList.add('show');
+    return;
+  }
+
+  // ── 3. RATE LIMITING LOCAL ─────────────────────────────────
+  if (rlBlocked()) {
+    errG.textContent = `Ya enviaste pronósticos recientemente. Espera ${rlMinutesLeft()} minuto(s) antes de intentarlo de nuevo.`;
+    errG.classList.add('show');
+    return;
+  }
+
   const nombre = document.getElementById('f-nombre').value.trim();
   const email  = document.getElementById('f-email').value.trim().toLowerCase();
-  const cel    = document.getElementById('f-cel').value.trim();
+  const cel    = document.getElementById('f-cel').value.trim().replace(/\s/g, '');
 
   if (!nombre || !email || !cel) {
     errD.textContent = 'Por favor completa todos tus datos.';
@@ -315,6 +371,13 @@ window._enviar = async function() {
   }
   if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) {
     errD.textContent = 'El correo no parece válido.';
+    errD.classList.add('show');
+    return;
+  }
+
+  // ── 4. VALIDACIÓN CELULAR COLOMBIANO (10 dígitos, empieza en 3) ──
+  if (!/^3[0-9]{9}$/.test(cel)) {
+    errD.textContent = 'El celular debe tener 10 dígitos y empezar por 3 (ej: 3001234567).';
     errD.classList.add('show');
     return;
   }
@@ -338,22 +401,35 @@ window._enviar = async function() {
   btn.textContent = 'Enviando…';
 
   try {
-    // Verificar si ya se inscribió con ese email en esta ronda activa
-    const yaSnap = await getDocs(query(
-      collection(db, 'polla_inscripciones'),
-      where('email', '==', email)
-    ));
-    const yaInscrito = yaSnap.docs.some(d => d.data().rondaActiva === true);
-    if (yaInscrito) {
-      errG.textContent = 'Ya tienes pronósticos enviados con ese correo. Solo se permite una participación por ronda.';
+    // ── 5. VERIFICAR DUPLICADOS: email Y celular ───────────────
+    const yaSnap = await getDocs(collection(db, 'polla_inscripciones'));
+    const activos = yaSnap.docs.filter(d => d.data().rondaActiva === true);
+
+    const yaEmail = activos.some(d => d.data().email === email);
+    if (yaEmail) {
+      errG.textContent = 'Ya hay pronósticos enviados con ese correo en esta ronda. Solo se permite una participación por ronda.';
       errG.classList.add('show');
       btn.disabled = false;
       btn.innerHTML = '<i class="fas fa-paper-plane"></i>&nbsp; Enviar pronósticos';
       return;
     }
 
+    const celNorm = cel; // ya viene sin espacios
+    const yaCel = activos.some(d => (d.data().cel || '').replace(/\s/g,'') === celNorm);
+    if (yaCel) {
+      errG.textContent = 'Ya hay pronósticos enviados con ese número de celular en esta ronda.';
+      errG.classList.add('show');
+      btn.disabled = false;
+      btn.innerHTML = '<i class="fas fa-paper-plane"></i>&nbsp; Enviar pronósticos';
+      return;
+    }
+
+    // Registrar en localStorage ANTES de guardar (bloquea reintentos rápidos)
+    rlRecord();
+
     await addDoc(collection(db, 'polla_inscripciones'), {
-      nombre, email, cel,
+      nombre, email,
+      cel: cel, // ya normalizado sin espacios
       pronosticos,
       rondaActiva: true,
       creadoEn: serverTimestamp()
