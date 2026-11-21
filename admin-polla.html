@@ -84,6 +84,7 @@
     .badge-verde{background:rgba(45,122,58,.2);color:#5dca6d;border:1px solid rgba(45,122,58,.4);border-radius:3px;font-family:var(--ff-sub);font-size:.7rem;font-weight:700;padding:.15rem .5rem;letter-spacing:.06em}
     .badge-rojo{background:rgba(192,57,43,.2);color:#e87070;border:1px solid rgba(192,57,43,.4);border-radius:3px;font-family:var(--ff-sub);font-size:.7rem;font-weight:700;padding:.15rem .5rem;letter-spacing:.06em}
     .badge-gris{background:rgba(255,255,255,.07);color:#aaa;border:1px solid #333;border-radius:3px;font-family:var(--ff-sub);font-size:.7rem;padding:.15rem .5rem}
+    .badge-amarillo{background:rgba(201,168,76,.15);color:#e8c97a;border:1px solid rgba(201,168,76,.35);border-radius:3px;font-family:var(--ff-sub);font-size:.7rem;font-weight:700;padding:.15rem .5rem;letter-spacing:.06em}
 
     /* PARTIDO ITEM */
     .partido-item{background:var(--dark3);border:1px solid #333;border-radius:7px;padding:.9rem 1rem;margin-bottom:.7rem;display:flex;align-items:center;gap:.8rem;flex-wrap:wrap}
@@ -437,10 +438,15 @@ window._verPronos = function(iid) {
     const res = partido?.resultado;
     let estado = '<span class="badge-gris">Pendiente</span>';
     if (res) {
-      const acierto = p.local===res.local && p.visitante===res.visitante;
-      estado = acierto
-        ? '<span class="badge-verde">✓ Acertó</span>'
-        : '<span class="badge-rojo">✗ Falló</span>';
+      if (p.local===res.local && p.visitante===res.visitante) {
+        estado = '<span class="badge-verde">⭐ Exacto (+3)</span>';
+      } else {
+        const signoP = Math.sign(p.local - p.visitante);
+        const signoR = Math.sign(res.local - res.visitante);
+        estado = signoP === signoR
+          ? '<span class="badge-amarillo">✓ Resultado (+1)</span>'
+          : '<span class="badge-rojo">✗ Falló (0)</span>';
+      }
     }
     return `<tr>
       <td>${esc(p.nombrePartido || (partido?.nombre)||pid)}</td>

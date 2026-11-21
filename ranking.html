@@ -91,8 +91,8 @@
 
   <div class="info-box">
     <i class="fas fa-info-circle"></i>
-    <strong>Sistema de puntos:</strong> 1 punto por marcador exacto acertado (p.ej. 2–1).
-    El ganador del mes recibe una <strong>inscripción al Torneo FIFA</strong> o una <strong>Hamburguesa La Tribuna</strong> gratis. · Por cada partido acertado, ¡una bebida gratis en tu próxima visita!
+    <strong>Sistema de puntos:</strong> ⭐ <strong>3 pts</strong> marcador exacto (ej. 2–1) · ✓ <strong>1 pt</strong> resultado correcto (ganador o empate) · ✗ <strong>0 pts</strong> fallo.
+    El mayor puntaje del mes gana <strong>inscripción al Torneo FIFA</strong> o <strong>Hamburguesa La Tribuna</strong>. · Por cada marcador exacto, ¡una bebida gratis!
   </div>
 
   <div id="podio-wrap"></div>
@@ -147,24 +147,29 @@ async function cargarRanking() {
     ));
 
     // Calcular puntos por persona
+    // 3 pts = marcador exacto | 1 pt = resultado correcto (ganador/empate) | 0 = fallo
     const ranking = [];
     iSnap.docs.forEach(d=>{
       const ins = d.data();
-      if (!ins.rondaActiva) return; // solo ronda activa
-      let puntos = 0, aciertos = 0;
+      if (!ins.rondaActiva) return;
+      let puntos = 0, exactos = 0, resultados = 0;
       const pronos = ins.pronosticos || {};
       Object.entries(pronos).forEach(([pid, p])=>{
         const res = partidos[pid];
-        if (res && p.local === res.local && p.visitante === res.visitante) {
-          puntos++;
-          aciertos++;
+        if (!res) return;
+        if (p.local === res.local && p.visitante === res.visitante) {
+          puntos += 3; exactos++;
+        } else {
+          const signoP = Math.sign(p.local - p.visitante);
+          const signoR = Math.sign(res.local - res.visitante);
+          if (signoP === signoR) { puntos += 1; resultados++; }
         }
       });
-      ranking.push({ nombre: ins.nombre, puntos, aciertos });
+      ranking.push({ nombre: ins.nombre, puntos, exactos, resultados });
     });
 
     // Ordenar por puntos desc
-    ranking.sort((a,b)=> b.puntos - a.puntos || b.aciertos - a.aciertos);
+    ranking.sort((a,b)=> b.puntos - a.puntos || b.exactos - a.exactos || b.resultados - a.resultados);
 
     renderRanking(ranking);
   } catch(e) {
@@ -211,7 +216,7 @@ function renderRanking(ranking) {
     return `<div class="ranking-row ${cls}">
       <div class="rk-pos">${posLabel}</div>
       <div class="rk-name">${esc(p.nombre)}</div>
-      <div class="rk-aciertos">${p.aciertos} ✓</div>
+      <div class="rk-aciertos" title="Exactos / Resultado">${p.exactos}⭐ ${p.resultados}✓</div>
       <div class="rk-pts">${p.puntos}</div>
     </div>`;
   }).join('');
