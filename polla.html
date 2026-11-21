@@ -95,13 +95,37 @@
     /* ALERT */
     .alert { border-radius: 5px; padding: .6rem .9rem; font-family: var(--ff-sub); font-size: .88rem; margin-top .6rem; }
     .alert-warn { background: rgba(201,168,76,.12); border: 1px solid rgba(201,168,76,.35); color: var(--gold-light); }
+
+    /* PREMIOS */
+    .premios-wrap { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1.2rem; }
+    @media(max-width:520px){ .premios-wrap { grid-template-columns: 1fr; } }
+    .premio-card { background: var(--dark2); border: 1px solid #2e2e2e; border-radius: 8px; padding: 1rem 1.1rem; display: flex; gap: .9rem; align-items: flex-start; }
+    .premio-mes { border-color: var(--gold); background: rgba(201,168,76,.06); }
+    .premio-icon { font-size: 1.8rem; flex-shrink: 0; }
+    .premio-label { font-family: var(--ff-sub); font-size: .7rem; letter-spacing: .12em; text-transform: uppercase; opacity: .5; margin-bottom: .2rem; }
+    .premio-titulo { font-family: var(--ff-sub); font-size: .95rem; font-weight: 700; color: var(--gold); margin-bottom: .3rem; line-height: 1.2; }
+    .premio-desc { font-family: var(--ff-body); font-size: .8rem; opacity: .65; line-height: 1.4; }
+
+    /* REGLAS */
+    .reglas-box { background: var(--dark2); border: 1px solid #2e2e2e; border-radius: 8px; margin-bottom: 1.5rem; overflow: hidden; }
+    .reglas-box summary { font-family: var(--ff-sub); font-size: .9rem; font-weight: 700; color: var(--gold); letter-spacing: .08em; text-transform: uppercase; padding: .9rem 1.1rem; cursor: pointer; display: flex; align-items: center; gap: .5rem; list-style: none; }
+    .reglas-box summary::-webkit-details-marker { display: none; }
+    .reglas-box[open] summary { border-bottom: 1px solid #2e2e2e; }
+    .reglas-list { list-style: none; padding: 1rem 1.1rem; display: flex; flex-direction: column; gap: .6rem; }
+    .reglas-list li { font-family: var(--ff-body); font-size: .88rem; opacity: .8; display: flex; gap: .6rem; align-items: flex-start; line-height: 1.4; }
+    .reglas-list li i { color: var(--gold); margin-top: .15rem; flex-shrink: 0; font-size: .75rem; }
   </style>
 </head>
 <body>
 
 <nav>
   <a class="logo" href="index.html">La Tribuna 90</a>
-  <a class="back" href="index.html"><i class="fas fa-arrow-left"></i> Volver</a>
+  <div style="margin-left:auto;display:flex;gap:.8rem;align-items:center">
+    <a href="ranking.html" style="color:var(--gold);text-decoration:none;font-family:var(--ff-sub);font-size:.85rem;display:flex;align-items:center;gap:.3rem">
+      <i class="fas fa-trophy"></i> Ranking
+    </a>
+    <a class="back" href="index.html"><i class="fas fa-arrow-left"></i> Volver</a>
+  </div>
 </nav>
 
 <div class="hero">
@@ -111,6 +135,39 @@
 </div>
 
 <div class="container">
+
+  <!-- PREMIOS -->
+  <div class="premios-wrap">
+    <div class="premio-card">
+      <div class="premio-icon">🍺</div>
+      <div class="premio-body">
+        <div class="premio-label">Cada partido</div>
+        <div class="premio-titulo">Bebida gratis</div>
+        <div class="premio-desc">Acierte el marcador exacto y gana una bebida gratis en tu próxima visita</div>
+      </div>
+    </div>
+    <div class="premio-card premio-mes">
+      <div class="premio-icon">🏆</div>
+      <div class="premio-body">
+        <div class="premio-label">Premio del mes</div>
+        <div class="premio-titulo">Inscripción al Torneo FIFA o Hamburguesa La Tribuna</div>
+        <div class="premio-desc">El hincha con más puntos acumulados en el mes se lleva el gran premio</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- REGLAS -->
+  <details class="reglas-box">
+    <summary><i class="fas fa-scroll"></i> Reglas del juego</summary>
+    <ul class="reglas-list">
+      <li><i class="fas fa-check"></i> Ingresa el marcador exacto de cada partido antes de que empiece</li>
+      <li><i class="fas fa-check"></i> <strong>1 punto</strong> por cada marcador exacto acertado (p.ej. Colombia 2 – Argentina 1)</li>
+      <li><i class="fas fa-check"></i> <strong>0 puntos</strong> si el marcador no es exacto, aunque aciertes el ganador</li>
+      <li><i class="fas fa-check"></i> Solo se permite <strong>una participación por correo</strong> por ronda</li>
+      <li><i class="fas fa-check"></i> Los puntos del mes se acumulan en el <a href="ranking.html" style="color:var(--gold)">ranking mensual</a></li>
+      <li><i class="fas fa-check"></i> Los premios se reclaman directamente en La Tribuna 90 mostrando tu correo</li>
+    </ul>
+  </details>
 
   <!-- REGISTRO + PRONÓSTICOS -->
   <div id="app">

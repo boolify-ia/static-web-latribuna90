@@ -1,0 +1,226 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Ranking · La Polla Cancha · La Tribuna 90</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=Barlow+Condensed:wght@400;600;700&family=Barlow:wght@400;500;600&display=swap" rel="stylesheet"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+  <style>
+    :root {
+      --gold:#c9a84c; --gold-light:#e8c97a; --dark:#0d0d0d; --dark2:#1a1a1a;
+      --dark3:#242424; --green:#2d7a3a; --white:#f5f5f5;
+      --ff-title:'Bebas Neue',sans-serif; --ff-sub:'Barlow Condensed',sans-serif;
+      --ff-body:'Barlow',sans-serif;
+    }
+    *{box-sizing:border-box;margin:0;padding:0}
+    body{background:var(--dark);color:var(--white);font-family:var(--ff-body);min-height:100vh}
+
+    nav{background:#0a0a0a;border-bottom:2px solid var(--gold);padding:.8rem 1.5rem;display:flex;align-items:center;gap:1rem}
+    nav a.logo{font-family:var(--ff-title);font-size:1.6rem;color:var(--gold);text-decoration:none;letter-spacing:.05em}
+    nav a.back{color:var(--white);text-decoration:none;font-family:var(--ff-sub);font-size:.9rem;opacity:.7;display:flex;align-items:center;gap:.4rem;margin-left:auto}
+    nav a.back:hover{opacity:1}
+
+    .hero{text-align:center;padding:3rem 1.5rem 2rem;background:linear-gradient(180deg,#111 0%,var(--dark) 100%);border-bottom:1px solid #2a2a2a}
+    .hero .badge{display:inline-block;background:var(--gold);color:#000;font-family:var(--ff-sub);font-size:.75rem;font-weight:700;letter-spacing:.15em;padding:.3rem .8rem;border-radius:2px;margin-bottom:.8rem;text-transform:uppercase}
+    .hero h1{font-family:var(--ff-title);font-size:clamp(2.2rem,6vw,3.8rem);color:var(--gold);letter-spacing:.03em;line-height:1;margin-bottom:.4rem}
+    .hero p{font-family:var(--ff-sub);font-size:1rem;opacity:.65;margin-bottom:.8rem}
+    .mes-badge{display:inline-block;background:var(--dark3);border:1px solid var(--gold);border-radius:4px;font-family:var(--ff-sub);font-size:.85rem;color:var(--gold);padding:.3rem 1rem;letter-spacing:.08em}
+
+    .container{max-width:700px;margin:0 auto;padding:2rem 1.5rem}
+
+    /* PODIO */
+    .podio{display:flex;justify-content:center;align-items:flex-end;gap:.6rem;margin-bottom:2rem}
+    .podio-item{display:flex;flex-direction:column;align-items:center;gap:.4rem}
+    .podio-avatar{width:54px;height:54px;border-radius:50%;background:var(--dark3);border:2px solid #444;display:flex;align-items:center;justify-content:center;font-family:var(--ff-title);font-size:1.3rem;color:var(--white)}
+    .podio-item:nth-child(1) .podio-avatar{width:66px;height:66px;border-color:var(--gold);font-size:1.6rem}
+    .podio-item:nth-child(2) .podio-avatar{border-color:#aaa}
+    .podio-item:nth-child(3) .podio-avatar{border-color:#cd7f32}
+    .podio-name{font-family:var(--ff-sub);font-size:.8rem;font-weight:700;text-align:center;max-width:80px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .podio-pts{font-family:var(--ff-title);font-size:1.1rem;color:var(--gold)}
+    .podio-block{border-radius:4px 4px 0 0;width:60px}
+    .podio-item:nth-child(1) .podio-block{height:70px;background:linear-gradient(180deg,rgba(201,168,76,.4),rgba(201,168,76,.1));border:1px solid rgba(201,168,76,.4)}
+    .podio-item:nth-child(2) .podio-block{height:50px;background:rgba(255,255,255,.07);border:1px solid #333}
+    .podio-item:nth-child(3) .podio-block{height:35px;background:rgba(205,127,50,.12);border:1px solid rgba(205,127,50,.3)}
+    .podio-pos{font-family:var(--ff-sub);font-size:.7rem;opacity:.5;margin-bottom:.2rem}
+
+    /* TABLA */
+    .ranking-card{background:var(--dark2);border:1px solid #2e2e2e;border-radius:8px;overflow:hidden;margin-bottom:1.5rem}
+    .ranking-header{padding:.8rem 1rem;border-bottom:1px solid #2a2a2a;font-family:var(--ff-sub);font-size:.8rem;letter-spacing:.1em;text-transform:uppercase;opacity:.5;display:grid;grid-template-columns:2.5rem 1fr auto auto;gap:.5rem;align-items:center}
+    .ranking-row{display:grid;grid-template-columns:2.5rem 1fr auto auto;gap:.5rem;align-items:center;padding:.75rem 1rem;border-bottom:1px solid #1e1e1e;transition:background .15s}
+    .ranking-row:last-child{border-bottom:none}
+    .ranking-row:hover{background:rgba(255,255,255,.02)}
+    .ranking-row.top1{background:rgba(201,168,76,.07)}
+    .ranking-row.top2{background:rgba(200,200,200,.04)}
+    .ranking-row.top3{background:rgba(205,127,50,.05)}
+    .rk-pos{font-family:var(--ff-title);font-size:1.2rem;color:var(--gold);text-align:center}
+    .rk-pos.medal::after{content:'🥇';font-size:1rem}
+    .rk-name{font-family:var(--ff-sub);font-weight:700;font-size:.95rem;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+    .rk-aciertos{font-family:var(--ff-sub);font-size:.8rem;opacity:.45;text-align:right}
+    .rk-pts{font-family:var(--ff-title);font-size:1.3rem;color:var(--gold);text-align:right;min-width:40px}
+
+    /* ESTADOS */
+    .spinner{width:32px;height:32px;border:3px solid #333;border-top-color:var(--gold);border-radius:50%;animation:spin .7s linear infinite;margin:3rem auto}
+    @keyframes spin{to{transform:rotate(360deg)}}
+    .empty{text-align:center;padding:3rem 1rem;font-family:var(--ff-sub);opacity:.4;font-size:1rem}
+
+    /* INFO */
+    .info-box{background:rgba(201,168,76,.07);border:1px solid rgba(201,168,76,.2);border-radius:8px;padding:1rem 1.2rem;font-family:var(--ff-sub);font-size:.85rem;color:var(--gold-light);line-height:1.6;margin-bottom:1.5rem}
+    .info-box i{margin-right:.4rem;opacity:.7}
+
+    .btn-inscribirse{display:block;background:var(--gold);color:#000;border:none;border-radius:5px;padding:.8rem;font-family:var(--ff-sub);font-size:1rem;font-weight:700;letter-spacing:.08em;text-transform:uppercase;cursor:pointer;text-align:center;text-decoration:none;transition:background .2s}
+    .btn-inscribirse:hover{background:var(--gold-light)}
+  </style>
+</head>
+<body>
+
+<nav>
+  <a class="logo" href="index.html">La Tribuna 90</a>
+  <a class="back" href="polla.html"><i class="fas fa-arrow-left"></i> Volver a la Polla</a>
+</nav>
+
+<div class="hero">
+  <span class="badge">🏆 Tabla de Posiciones</span>
+  <h1>Ranking<br>La Polla Cancha</h1>
+  <p>El hincha más crack del mes gana un premio en La Tribuna 90</p>
+  <div class="mes-badge" id="mes-label">Cargando…</div>
+</div>
+
+<div class="container">
+
+  <div class="info-box">
+    <i class="fas fa-info-circle"></i>
+    <strong>Sistema de puntos:</strong> 1 punto por marcador exacto acertado (p.ej. 2–1).
+    El ganador del mes recibe una <strong>inscripción al Torneo FIFA</strong> o una <strong>Hamburguesa La Tribuna</strong> gratis. · Por cada partido acertado, ¡una bebida gratis en tu próxima visita!
+  </div>
+
+  <div id="podio-wrap"></div>
+
+  <div class="ranking-card">
+    <div class="ranking-header">
+      <span>#</span><span>Hincha</span><span>Aciertos</span><span>Pts</span>
+    </div>
+    <div id="ranking-body"><div class="spinner"></div></div>
+  </div>
+
+  <a href="polla.html" class="btn-inscribirse">
+    <i class="fas fa-futbol"></i>&nbsp; Hacer mis pronósticos
+  </a>
+
+</div>
+
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import {
+  getFirestore, collection, getDocs, query, orderBy
+} from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const db = getFirestore(initializeApp({
+  apiKey:"AIzaSyDpSwCwCwGtm2EXML5HWFrajqfKeZMff48",
+  authDomain:"latribuna90-static-web.firebaseapp.com",
+  projectId:"latribuna90-static-web",
+  storageBucket:"latribuna90-static-web.firebasestorage.app",
+  messagingSenderId:"961712839386",
+  appId:"1:961712839386:web:94e1a3f6a000c7d9a823e3"
+}));
+
+// Label del mes actual
+const ahora = new Date();
+document.getElementById('mes-label').textContent =
+  ahora.toLocaleDateString('es-CO',{month:'long',year:'numeric'}).replace(/^\w/,c=>c.toUpperCase());
+
+async function cargarRanking() {
+  try {
+    // Cargar partidos con resultado
+    const pSnap = await getDocs(collection(db,'polla_partidos'));
+    const partidos = {};
+    pSnap.docs.forEach(d=>{
+      const p = d.data();
+      if (p.resultado) partidos[d.id] = p.resultado;
+    });
+
+    // Cargar inscripciones del mes activo
+    const iSnap = await getDocs(query(
+      collection(db,'polla_inscripciones'),
+      orderBy('creadoEn','desc')
+    ));
+
+    // Calcular puntos por persona
+    const ranking = [];
+    iSnap.docs.forEach(d=>{
+      const ins = d.data();
+      if (!ins.rondaActiva) return; // solo ronda activa
+      let puntos = 0, aciertos = 0;
+      const pronos = ins.pronosticos || {};
+      Object.entries(pronos).forEach(([pid, p])=>{
+        const res = partidos[pid];
+        if (res && p.local === res.local && p.visitante === res.visitante) {
+          puntos++;
+          aciertos++;
+        }
+      });
+      ranking.push({ nombre: ins.nombre, puntos, aciertos });
+    });
+
+    // Ordenar por puntos desc
+    ranking.sort((a,b)=> b.puntos - a.puntos || b.aciertos - a.aciertos);
+
+    renderRanking(ranking);
+  } catch(e) {
+    console.error(e);
+    document.getElementById('ranking-body').innerHTML =
+      '<div class="empty">Error al cargar el ranking.<br><small style="font-size:.7rem;opacity:.4">'+e.code+'</small></div>';
+  }
+}
+
+function renderRanking(ranking) {
+  const body = document.getElementById('ranking-body');
+  const podioWrap = document.getElementById('podio-wrap');
+
+  if (!ranking.length) {
+    body.innerHTML = '<div class="empty">Aún no hay participantes este mes.<br>¡Sé el primero!</div>';
+    return;
+  }
+
+  // Podio top 3
+  const top3 = ranking.slice(0,3);
+  const orden = top3.length >= 3 ? [1,0,2] : (top3.length === 2 ? [1,0] : [0]);
+  if (top3.length >= 2) {
+    podioWrap.innerHTML = `<div class="podio">
+      ${orden.map(i => {
+        const p = top3[i];
+        const pos = i+1;
+        const medals = ['🥇','🥈','🥉'];
+        return `<div class="podio-item">
+          <div class="podio-pos">${medals[i]||pos}</div>
+          <div class="podio-avatar">${p.nombre.charAt(0).toUpperCase()}</div>
+          <div class="podio-name">${esc(p.nombre.split(' ')[0])}</div>
+          <div class="podio-pts">${p.puntos} pts</div>
+          <div class="podio-block"></div>
+        </div>`;
+      }).join('')}
+    </div>`;
+  }
+
+  // Tabla completa
+  const rows = ranking.map((p,i)=>{
+    const pos = i+1;
+    const cls = pos===1?'top1':pos===2?'top2':pos===3?'top3':'';
+    const posLabel = pos<=3 ? ['🥇','🥈','🥉'][pos-1] : pos;
+    return `<div class="ranking-row ${cls}">
+      <div class="rk-pos">${posLabel}</div>
+      <div class="rk-name">${esc(p.nombre)}</div>
+      <div class="rk-aciertos">${p.aciertos} ✓</div>
+      <div class="rk-pts">${p.puntos}</div>
+    </div>`;
+  }).join('');
+  body.innerHTML = rows;
+}
+
+function esc(s){ return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+cargarRanking();
+</script>
+</body>
+</html>
