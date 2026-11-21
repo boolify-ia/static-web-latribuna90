@@ -147,14 +147,18 @@ async function init() {
   try {
     const snap = await getDocs(query(
       collection(db, 'polla_partidos'),
-      where('activo', '==', true),
       orderBy('fecha', 'asc')
     ));
-    partidos = snap.docs.map(d => ({ id: d.id, ...d.data() }));
+    partidos = snap.docs
+      .map(d => ({ id: d.id, ...d.data() }))
+      .filter(p => p.activo === true);
     renderForm();
   } catch(e) {
     console.error(e);
-    app.innerHTML = `<div class="empty-state"><div class="icon">⚠️</div><p>Error al cargar partidos. Intenta de nuevo.</p></div>`;
+    const msg = e.code === 'permission-denied'
+      ? 'Permisos de base de datos no configurados. Contacta al administrador.'
+      : 'Error al cargar partidos. Intenta de nuevo.';
+    app.innerHTML = `<div class="empty-state"><div class="icon">⚠️</div><p>${msg}</p><p style="font-size:.75rem;opacity:.4;margin-top:.5rem">${e.code||''}</p></div>`;
   }
 }
 
@@ -280,10 +284,10 @@ window._enviar = async function() {
     // Verificar si ya se inscribió con ese email en esta ronda activa
     const yaSnap = await getDocs(query(
       collection(db, 'polla_inscripciones'),
-      where('email', '==', email),
-      where('rondaActiva', '==', true)
+      where('email', '==', email)
     ));
-    if (!yaSnap.empty) {
+    const yaInscrito = yaSnap.docs.some(d => d.data().rondaActiva === true);
+    if (yaInscrito) {
       errG.textContent = 'Ya tienes pronósticos enviados con ese correo. Solo se permite una participación por ronda.';
       errG.classList.add('show');
       btn.disabled = false;

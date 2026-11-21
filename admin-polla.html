@@ -294,7 +294,7 @@ async function cargarTodo() {
 
 async function cargarPartidos() {
   const snap = await getDocs(query(collection(db,'polla_partidos'), orderBy('fecha','asc')));
-  partidos = snap.docs.map(d=>({id:d.id,...d.data()}));
+  partidos = snap.docs.map(d=>({id:d.id,...d.data()})).filter(p=>p.activo!==false || true); // todos, filtrar en renderPartidos
   renderPartidos();
   document.getElementById('stat-partidos').textContent = partidos.filter(p=>p.activo).length;
 }
@@ -330,10 +330,9 @@ function renderPartidos() {
 async function cargarInscritos() {
   const snap = await getDocs(query(
     collection(db,'polla_inscripciones'),
-    where('rondaActiva','==',true),
     orderBy('creadoEn','desc')
   ));
-  inscritos = snap.docs.map(d=>({id:d.id,...d.data()}));
+  inscritos = snap.docs.map(d=>({id:d.id,...d.data()})).filter(i=>i.rondaActiva===true);
   document.getElementById('stat-total').textContent = inscritos.length;
   renderInscritos();
 }
