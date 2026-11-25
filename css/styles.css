@@ -2104,6 +2104,8 @@ button { font-family: var(--ff-body); }
   max-width: 100%;
   height: auto;
   display: block;
+  background: #fff;
+  border-radius: 4px;
   box-shadow: 0 4px 24px rgba(0,0,0,.5);
 }
 @media (max-width: 480px) {
