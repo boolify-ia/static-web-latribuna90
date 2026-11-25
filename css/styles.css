@@ -2052,64 +2052,175 @@ button { font-family: var(--ff-body); }
   padding: 0;
   overflow: hidden;
 }
-/* Toolbar de navegación PDF */
-.carta-pdf-toolbar {
+/* ===== CARTA INTERACTIVA (imágenes) ===== */
+
+/* Modal redimensionado */
+.carta-modal.carta-modal-img {
+  max-width: 900px;
+  min-height: unset;
+  height: 92vh;
+  overflow: hidden;
+}
+
+/* TABS de categorías */
+.carta-tabs {
   display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: .5rem;
-  padding: .6rem 1rem;
+  overflow-x: auto;
+  gap: 0;
   background: #111;
   border-bottom: 1px solid #2a2a2a;
   flex-shrink: 0;
+  scrollbar-width: none;
 }
-.pdf-nav-btn {
-  background: var(--dark3);
-  border: 1px solid #3a3a3a;
-  color: var(--white);
-  border-radius: 5px;
-  width: 34px;
-  height: 34px;
+.carta-tabs::-webkit-scrollbar { display: none; }
+.ctab {
+  flex-shrink: 0;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  color: rgba(255,255,255,.5);
+  font-family: var(--ff-sub);
+  font-size: .78rem;
+  font-weight: 600;
+  letter-spacing: .05em;
+  padding: .55rem .9rem;
+  cursor: pointer;
+  transition: all .2s;
+  display: flex;
+  align-items: center;
+  gap: .35rem;
+  white-space: nowrap;
+}
+.ctab:hover { color: var(--gold-light); }
+.ctab.active {
+  color: var(--gold);
+  border-bottom-color: var(--gold);
+  background: rgba(201,168,76,.06);
+}
+
+/* Visor imagen */
+.carta-img-viewer {
+  flex: 1;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+  background: #111;
+  position: relative;
+  min-height: 0;
+}
+.carta-img-wrap {
+  flex: 1;
+  height: 100%;
   display: flex;
   align-items: center;
   justify-content: center;
-  cursor: pointer;
-  font-size: .85rem;
-  transition: all .2s;
+  overflow: hidden;
+  position: relative;
 }
-.pdf-nav-btn:hover { border-color: var(--gold); color: var(--gold); }
-.pdf-nav-btn:disabled { opacity: .3; cursor: not-allowed; }
-.pdf-page-info {
-  font-family: var(--ff-sub);
-  font-size: .85rem;
-  color: var(--gold);
-  min-width: 60px;
-  text-align: center;
-  letter-spacing: .05em;
-}
-/* Canvas wrap scrollable */
-.carta-canvas-wrap {
-  flex: 1;
-  overflow-y: auto;
-  overflow-x: auto;
-  background: #222;
-  display: flex;
-  justify-content: center;
-  align-items: flex-start;
-  padding: 1rem;
-  border-radius: 0 0 10px 10px;
-  -webkit-overflow-scrolling: touch;
-}
-#carta-canvas {
+#carta-img-main {
   max-width: 100%;
-  height: auto;
+  max-height: 100%;
+  object-fit: contain;
   display: block;
-  background: #fff;
-  border-radius: 4px;
-  box-shadow: 0 4px 24px rgba(0,0,0,.5);
+  transition: opacity .2s;
+  user-select: none;
 }
-@media (max-width: 480px) {
+.carta-img-loader {
+  position: absolute;
+  inset: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(0,0,0,.4);
+  opacity: 0;
+  transition: opacity .2s;
+  pointer-events: none;
+}
+.cl-spin {
+  width: 32px; height: 32px;
+  border: 3px solid #333;
+  border-top-color: var(--gold);
+  border-radius: 50%;
+  animation: spin .7s linear infinite;
+}
+
+/* Botones de navegación lateral */
+.carta-nav-btn {
+  flex-shrink: 0;
+  width: 44px;
+  height: 100%;
+  background: rgba(0,0,0,.35);
+  border: none;
+  color: rgba(255,255,255,.7);
+  font-size: 1.3rem;
+  cursor: pointer;
+  transition: all .2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 2;
+}
+.carta-nav-btn:hover {
+  background: rgba(201,168,76,.2);
+  color: var(--gold);
+}
+
+/* Footer: indicador + miniaturas */
+.carta-footer {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: .4rem;
+  padding: .5rem .8rem .6rem;
+  background: #111;
+  border-top: 1px solid #222;
+  flex-shrink: 0;
+}
+.carta-page-ind {
+  font-family: var(--ff-sub);
+  font-size: .78rem;
+  color: rgba(255,255,255,.45);
+  display: flex;
+  align-items: center;
+  gap: .5rem;
+}
+.carta-page-ind span:not(.carta-hint) { color: var(--gold); font-weight: 700; }
+.carta-hint { font-size: .68rem; opacity: .6; }
+.carta-thumbs {
+  display: flex;
+  gap: .4rem;
+  overflow-x: auto;
+  scrollbar-width: none;
+  padding-bottom: 2px;
+}
+.carta-thumbs::-webkit-scrollbar { display: none; }
+.cthumb {
+  flex-shrink: 0;
+  width: 46px;
+  height: 32px;
+  border-radius: 3px;
+  border: 2px solid transparent;
+  background-size: cover;
+  background-position: center top;
+  cursor: pointer;
+  transition: all .2s;
+  opacity: .5;
+}
+.cthumb:hover { opacity: .85; }
+.cthumb.active {
+  border-color: var(--gold);
+  opacity: 1;
+  box-shadow: 0 0 8px rgba(201,168,76,.4);
+}
+
+/* Legado PDF toolbar (mantenido oculto por si se necesita) */
+.carta-pdf-toolbar { display: none; }
+.carta-canvas-wrap { display: none; }
+
+@media (max-width: 600px) {
   .carta-modal-overlay { padding: 0; }
-  .carta-modal { border-radius: 0; min-height: 100vh; }
-  .carta-canvas-wrap { border-radius: 0; padding: .5rem; }
+  .carta-modal.carta-modal-img { border-radius: 0; height: 100dvh; }
+  .ctab { font-size: .7rem; padding: .5rem .6rem; }
+  .carta-nav-btn { width: 36px; font-size: 1rem; }
+  .cthumb { width: 36px; height: 25px; }
 }

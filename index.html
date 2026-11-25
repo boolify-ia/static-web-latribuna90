@@ -190,7 +190,7 @@
     <div class="grass-strip" aria-hidden="true"></div>
   </section>
 
-  <!-- ===================== CARTA PDF ===================== -->
+  <!-- ===================== CARTA ===================== -->
   <section id="menu" class="menu-section carta-pdf-section">
     <div class="container">
       <div class="section-header" data-aos="fade-up">
@@ -199,7 +199,7 @@
         <p class="section-sub">Platos con nombre de leyenda, sabores de campeonato</p>
       </div>
       <div class="carta-actions" data-aos="fade-up" data-aos-delay="100">
-        <button class="btn btn-primary btn-lg" onclick="document.getElementById('carta-modal').classList.add('open')">
+        <button class="btn btn-primary btn-lg" onclick="abrirCarta()">
           <i class="fas fa-utensils"></i>&nbsp; Ver Carta
         </button>
         <a href="carta-la-tribuna-90.pdf" download class="btn btn-outline btn-lg">
@@ -209,36 +209,156 @@
     </div>
   </section>
 
-  <!-- MODAL CARTA PDF -->
-  <div class="carta-modal-overlay" id="carta-modal">
-    <div class="carta-modal">
+  <!-- MODAL CARTA IMÁGENES -->
+  <div class="carta-modal-overlay" id="carta-modal" onclick="cerrarCartaSiOverlay(event)">
+    <div class="carta-modal carta-modal-img">
+      <!-- HEADER -->
       <div class="carta-modal-header">
         <span class="carta-modal-title"><i class="fas fa-utensils"></i> Carta La Tribuna 90</span>
         <div class="carta-modal-actions">
-          <a href="carta-la-tribuna-90.pdf" download class="btn-modal-dl" title="Descargar">
+          <a href="carta-la-tribuna-90.pdf" download class="btn-modal-dl" title="Descargar PDF">
             <i class="fas fa-download"></i>
           </a>
-          <button class="btn-modal-close" onclick="document.getElementById('carta-modal').classList.remove('open')" title="Cerrar">
+          <button class="btn-modal-close" onclick="cerrarCarta()" title="Cerrar">
             <i class="fas fa-times"></i>
           </button>
         </div>
       </div>
-      <div class="carta-modal-body">
-        <div class="carta-pdf-toolbar">
-          <button class="pdf-nav-btn" id="pdf-prev" title="Página anterior"><i class="fas fa-chevron-left"></i></button>
-          <span class="pdf-page-info"><span id="pdf-page-num">1</span> / <span id="pdf-page-total">?</span></span>
-          <button class="pdf-nav-btn" id="pdf-next" title="Página siguiente"><i class="fas fa-chevron-right"></i></button>
-          <button class="pdf-nav-btn" id="pdf-zoom-out" title="Alejar"><i class="fas fa-search-minus"></i></button>
-          <button class="pdf-nav-btn" id="pdf-zoom-in" title="Acercar"><i class="fas fa-search-plus"></i></button>
+
+      <!-- TABS categorías -->
+      <div class="carta-tabs" id="carta-tabs">
+        <button class="ctab active" data-page="0"><i class="fas fa-bookmark"></i> Portada</button>
+        <button class="ctab" data-page="1"><i class="fas fa-pepper-hot"></i> Para Picar</button>
+        <button class="ctab" data-page="2"><i class="fas fa-hamburger"></i> Hamburguesas</button>
+        <button class="ctab" data-page="3"><i class="fas fa-drumstick-bite"></i> Chicharrón</button>
+        <button class="ctab" data-page="4"><i class="fas fa-box"></i> Combos</button>
+        <button class="ctab" data-page="5"><i class="fas fa-wine-glass-alt"></i> Bebidas</button>
+        <button class="ctab" data-page="6"><i class="fas fa-mug-hot"></i> Café &amp; Postres</button>
+      </div>
+
+      <!-- VISOR IMAGEN PRINCIPAL -->
+      <div class="carta-img-viewer">
+        <!-- Flecha izquierda -->
+        <button class="carta-nav-btn carta-prev" id="carta-prev" onclick="cartaNavegar(-1)" title="Anterior">
+          <i class="fas fa-chevron-left"></i>
+        </button>
+
+        <!-- Imagen -->
+        <div class="carta-img-wrap" id="carta-img-wrap">
+          <img id="carta-img-main" src="img/carta/carta-01.jpg" alt="Carta La Tribuna 90" draggable="false"/>
+          <div class="carta-img-loader" id="carta-loader"><div class="cl-spin"></div></div>
         </div>
-        <div class="carta-canvas-wrap" id="carta-canvas-wrap">
-          <canvas id="carta-canvas"></canvas>
+
+        <!-- Flecha derecha -->
+        <button class="carta-nav-btn carta-next" id="carta-next" onclick="cartaNavegar(1)" title="Siguiente">
+          <i class="fas fa-chevron-right"></i>
+        </button>
+      </div>
+
+      <!-- FOOTER: indicador + miniaturas -->
+      <div class="carta-footer">
+        <div class="carta-page-ind">
+          <span id="carta-pnum">1</span> / <span id="carta-ptot">6</span>
+          <span class="carta-hint">Desliza o usa las flechas</span>
+        </div>
+        <div class="carta-thumbs" id="carta-thumbs">
+          <!-- generadas por JS -->
         </div>
       </div>
+
     </div>
   </div>
 
-  </section>
+  <script>
+  // === CARTA INTERACTIVA ===
+  const CARTA_PAGES = [
+    { src:'img/carta/carta-01.jpg', label:'Portada' },
+    { src:'img/carta/carta-02.jpg', label:'Para Picar' },
+    { src:'img/carta/carta-03.jpg', label:'Hamburguesas' },
+    { src:'img/carta/carta-04.jpg', label:'Chicharrón & Salchipapas' },
+    { src:'img/carta/carta-05.jpg', label:'Combos' },
+    { src:'img/carta/carta-06.jpg', label:'Bebidas' },
+    // página 06 es Sin Alcohol, Café y Postres — se sirve desde el mismo PDF
+    // usamos carta-06 como "Bebidas con Alcohol" y luego imagen especial si existe
+  ];
+
+  // Precarga todas las imágenes
+  CARTA_PAGES.forEach(p => { const i = new Image(); i.src = p.src; });
+
+  let cartaPag = 0;
+
+  // Generar miniaturas
+  (function initThumbs(){
+    const wrap = document.getElementById('carta-thumbs');
+    CARTA_PAGES.forEach((p, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'cthumb' + (i===0?' active':'');
+      btn.setAttribute('data-i', i);
+      btn.style.backgroundImage = `url('${p.src}')`;
+      btn.title = p.label;
+      btn.onclick = () => cartaIrA(i);
+      wrap.appendChild(btn);
+    });
+    document.getElementById('carta-ptot').textContent = CARTA_PAGES.length;
+  })();
+
+  function cartaIrA(n) {
+    cartaPag = Math.max(0, Math.min(CARTA_PAGES.length-1, n));
+    const img = document.getElementById('carta-img-main');
+    const loader = document.getElementById('carta-loader');
+    loader.style.opacity = '1';
+    img.style.opacity = '0';
+    img.onload = () => { img.style.opacity='1'; loader.style.opacity='0'; };
+    img.src = CARTA_PAGES[cartaPag].src;
+    if (img.complete) { img.style.opacity='1'; loader.style.opacity='0'; }
+    document.getElementById('carta-pnum').textContent = cartaPag+1;
+    // Tabs
+    document.querySelectorAll('.ctab').forEach((t,i) => t.classList.toggle('active', parseInt(t.dataset.page)===cartaPag));
+    // Thumbs
+    document.querySelectorAll('.cthumb').forEach(t => t.classList.toggle('active', parseInt(t.dataset.i)===cartaPag));
+    // Flechas
+    document.getElementById('carta-prev').style.opacity = cartaPag===0?'0.3':'1';
+    document.getElementById('carta-next').style.opacity = cartaPag===CARTA_PAGES.length-1?'0.3':'1';
+  }
+
+  function cartaNavegar(dir) { cartaIrA(cartaPag + dir); }
+
+  // Tabs click
+  document.querySelectorAll('.ctab').forEach(t => {
+    t.onclick = () => cartaIrA(parseInt(t.dataset.page));
+  });
+
+  // Swipe táctil
+  let tsX = 0;
+  const imgWrap = document.getElementById('carta-img-wrap');
+  imgWrap.addEventListener('touchstart', e => { tsX = e.touches[0].clientX; }, {passive:true});
+  imgWrap.addEventListener('touchend', e => {
+    const dx = e.changedTouches[0].clientX - tsX;
+    if (Math.abs(dx) > 40) cartaNavegar(dx < 0 ? 1 : -1);
+  }, {passive:true});
+
+  // Teclado
+  document.addEventListener('keydown', e => {
+    const m = document.getElementById('carta-modal');
+    if (!m.classList.contains('open')) return;
+    if (e.key==='ArrowRight') cartaNavegar(1);
+    if (e.key==='ArrowLeft') cartaNavegar(-1);
+    if (e.key==='Escape') cerrarCarta();
+  });
+
+  function abrirCarta() {
+    document.getElementById('carta-modal').classList.add('open');
+    document.body.style.overflow = 'hidden';
+    cartaIrA(0);
+  }
+  function cerrarCarta() {
+    document.getElementById('carta-modal').classList.remove('open');
+    document.body.style.overflow = '';
+  }
+  function cerrarCartaSiOverlay(e) {
+    if (e.target === document.getElementById('carta-modal')) cerrarCarta();
+  }
+  </script>
 
   <!-- ===================== POLLA DE PARTIDOS ===================== -->
   <section id="polla" class="polla-section">
@@ -641,88 +761,6 @@
   <!-- Scripts -->
   <script src="https://unpkg.com/aos@2.3.1/dist/aos.js"></script>
   <script src="js/main.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.min.mjs" type="module"></script>
-  <script type="module">
-    // PDF.js via CDN
-    const { getDocument, GlobalWorkerOptions } = await import('https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.min.mjs');
-    GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/4.4.168/pdf.worker.min.mjs';
-
-    const PDF_URL = 'carta-la-tribuna-90.pdf';
-    let pdfDoc = null, pageNum = 1, pageRendering = false, scale = 1.0;
-    const canvas = document.getElementById('carta-canvas');
-    const ctx = canvas.getContext('2d');
-    const wrap = document.getElementById('carta-canvas-wrap');
-
-    async function renderPage(num) {
-      if (pageRendering) return;
-      pageRendering = true;
-      const page = await pdfDoc.getPage(num);
-      const wrapW = wrap.clientWidth || 360;
-      const viewport = page.getViewport({ scale: 1 });
-      const autoScale = (wrapW / viewport.width) * scale;
-      const vp = page.getViewport({ scale: autoScale });
-      canvas.width  = vp.width;
-      canvas.height = vp.height;
-      // Fondo blanco antes de renderizar (evita fondo rosado/transparente en imágenes PNG)
-      ctx.fillStyle = '#ffffff';
-      ctx.fillRect(0, 0, canvas.width, canvas.height);
-      await page.render({ canvasContext: ctx, viewport: vp, background: 'white' }).promise;
-      pageRendering = false;
-      document.getElementById('pdf-page-num').textContent = num;
-    }
-
-    async function loadPDF() {
-      pdfDoc = await getDocument(PDF_URL).promise;
-      document.getElementById('pdf-page-total').textContent = pdfDoc.numPages;
-      renderPage(pageNum);
-    }
-
-    document.getElementById('pdf-prev').addEventListener('click', () => {
-      if (pageNum <= 1) return;
-      pageNum--;
-      renderPage(pageNum);
-      wrap.scrollTop = 0;
-    });
-    document.getElementById('pdf-next').addEventListener('click', () => {
-      if (pageNum >= pdfDoc.numPages) return;
-      pageNum++;
-      renderPage(pageNum);
-      wrap.scrollTop = 0;
-    });
-    document.getElementById('pdf-zoom-in').addEventListener('click', () => {
-      scale = Math.min(scale + 0.25, 3);
-      renderPage(pageNum);
-    });
-    document.getElementById('pdf-zoom-out').addEventListener('click', () => {
-      scale = Math.max(scale - 0.25, 0.5);
-      renderPage(pageNum);
-    });
-
-    // Swipe en móvil
-    let touchStartX = 0;
-    canvas.addEventListener('touchstart', e => { touchStartX = e.touches[0].clientX; });
-    canvas.addEventListener('touchend', e => {
-      const dx = e.changedTouches[0].clientX - touchStartX;
-      if (Math.abs(dx) > 50) {
-        if (dx < 0 && pageNum < pdfDoc.numPages) { pageNum++; renderPage(pageNum); wrap.scrollTop = 0; }
-        if (dx > 0 && pageNum > 1)               { pageNum--; renderPage(pageNum); wrap.scrollTop = 0; }
-      }
-    });
-
-    // Abrir modal → cargar PDF la primera vez
-    document.getElementById('carta-modal').addEventListener('click', function(e) {
-      if (e.target === this) this.classList.remove('open');
-    });
-    document.querySelectorAll('[onclick*="carta-modal"]').forEach(btn => {
-      btn.addEventListener('click', () => { if (!pdfDoc) loadPDF(); });
-    });
-    document.addEventListener('keydown', e => {
-      const modal = document.getElementById('carta-modal');
-      if (!modal.classList.contains('open')) return;
-      if (e.key === 'Escape') modal.classList.remove('open');
-      if (e.key === 'ArrowRight' && pageNum < pdfDoc?.numPages) { pageNum++; renderPage(pageNum); wrap.scrollTop = 0; }
-      if (e.key === 'ArrowLeft'  && pageNum > 1)                { pageNum--; renderPage(pageNum); wrap.scrollTop = 0; }
-    });
-  </script>
+  <!-- PDF.js ya no se usa para el visor; la carta se muestra como imágenes -->
 </body>
 </html>
